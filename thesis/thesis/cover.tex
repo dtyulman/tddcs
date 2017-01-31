@@ -1,0 +1,83 @@
+\def\signature#1#2{\par\noindent#1\dotfill\null\\*{\raggedleft #2\par}}
+
+\newgeometry{margin=1in}
+
+\begin{titlepage}   
+{\Large\bf Time-domain diffuse correlation spectroscopy: instrument prototype, preliminary measurements, and theoretical modeling  \par}
+by\par
+{\Large  Danil Tyulmankov}
+\par
+S.B., EECS and BCS, MIT (2016)
+\par
+Submitted to the Department of Electrical Engineering and Computer Science \\
+in partial fulfillment of the requirements for the degree of
+\par
+Master of Engineering in Electrical Engineering and Computer Science
+\par
+at the
+\par
+MASSACHUSETTS INSTITUTE OF TECHNOLOGY
+\par
+February 2017
+\par
+\copyright\ Danil Tyulmankov 2017.  All rights reserved.
+\par
+The author hereby grants to MIT permission to reproduce and to distribute publicly paper and electronic copies of this thesis document in whole or in part in any medium now known or hereafter created.
+\vskip 3\baselineskip
+\signature{Author}{Department of Electrical Engineering and Computer Science \\ February 3, 2017}
+\par
+\signature{Certified by}{Maria Angela Franceschini \\ Associate Professor of Radiology, Harvard Medical School\\ Thesis Supervisor}
+\par
+\signature{Certified by}{Elfar Adalsteinsson \\ Professor of Electrical Engineering and Computer Science, MIT \\ Thesis Co-Supervisor}
+\par
+\signature{Accepted by}{Christopher Terman \\ Chairman, Masters of Engineering Thesis Committee}
+\vfill
+\end{titlepage}
+
+
+\cleardoublepage
+\begin{center}
+{\large{\bf Time-domain diffuse correlation spectroscopy:\\ instrument prototype, preliminary measurements, and theoretical modeling} \\
+by \\
+Danil Tyulmankov\\[\baselineskip]}
+\par
+\def\baselinestretch{1}\normalsize
+Submitted to the Department of Electrical Engineering and Computer Science \\
+on February 3, 2017, in partial fulfillment of the \\
+requirements for the degree of \\
+Master of Engineering in Electrical Engineering and Computer Science
+\end{center}
+\par
+\subsection*{Abstract}{\small\def\baselinestretch{1}\normalsize
+Near-infrared spectroscopy (NIRS) is a powerful diffuse optical imaging tool with both clinical and academic applications such as functional brain imaging, breast cancer detection, and cerebral health monitoring. Due to its non-invasiveness, high spatial and temporal resolution, and portability, it has been rapidly growing in popularity over the last 40 years. The technique relies on near-infrared light to measure optical properties -- scattering and absorption -- which can then be used to infer details of the underlying tissue physiology. Diffuse correlation spectroscopy (DCS)  is a complimentary optical technique that relies on long-coherence laser light, also in the near-infrared range, to measure dynamical properties of a medium -- in the biomedical context, blood flow. While NIRS and DCS can be used in parallel to provide even more detailed information, they require separate instrumentation resulting in reduced portability and difficulty in bedside monitoring. In brain imaging applications, both NIRS and DCS suffer from confounds due to layers surrounding the brain, such as the scalp and skull. While this issue has been addressed in NIRS using time-resolved instrumentation known as time-domain (TD) NIRS, it has been largely ignored in the context of DCS. 
+
+In this work, we propose a novel time-domain diffuse correlation spectroscopy (TD-DCS) technique that combines DCS with TD-NIRS to create a single instrument capable of simultaneously measuring optical and dynamical properties. Along with maintaining portability, the instrument reduces error by directly measuring the absorption and scattering values necessary for robust flow estimation, and removes a major confounding factor by suppressing unwanted signal from superficial layers through time-gating. We describe the construction of the first instrument prototype and demonstrate the depth resolution proof-of-concept with measurements of multi-layer media. We further discuss the theoretical considerations of modeling the light interaction with tissue, necessary for reliable estimates.
+\\
+\\
+Thesis Supervisor: Maria Angela Franceschini \\ 
+Title: Associate Professor of Radiology, Harvard Medical School
+\\
+\\
+Thesis Co-Supervisor: Elfar Adalsteinsson \\ 
+Title: Professor of Electrical Engineering and Computer Science, MIT
+}
+\cleardoublepage
+
+\section*{Preface and Acknowledgments}
+
+\epigraph{\textit{"The more we learn about the world, and the deeper our learning, the more conscious, specific, and articulate will be our knowledge of what we do not know, our knowledge of our ignorance."}}{Karl Popper (1963)}
+
+Despite the incredible amount I have learned in the last two years, I can make no claims about being an expert in this field. Although I now know far more than I did when I first discovered diffuse optics, even more so I have come to realize how much I have yet to learn. It is beyond the scope of this work to describe in detail all that we \emph{do} know about the field, so instead I write this to outline what there \emph{is} to know. A comprehensive yet basic introductory text is difficult to find, so in addition to serving as the capstone of my last two years of learning and research, I write this thesis in hopes that it might be a good first exposure for someone who is just entering the field of biomedical diffuse optics. In other words, I write this for myself, two years ago, and hope it will be useful for someone who finds themselves in a similar situation. For this reason, I exclude most of the mathematical rigor and derivations, providing only the necessary context and intuition to more easily parse the details provided in the references. In addition to the background necessary for my project, I make an attempt to provide a small amount of history, give a bird's-eye view of the field, and organize the various terminology.  
+
+% probably not in this section but I want to draw a "family tree" of optical imaging techniques somewhere (or a chart delineating them. Axes, I think, could be principles (e.g. scattering/absorption/models used) techniques (e.g. instrumentation,analysis) and applications (e.g. NIRS for Hb measurement or non-biomed, DLS for particle sizing or flow measurement)
+
+I have many people to thank for helping me get to where I am now. First and foremost, I want to thank Mari for giving me the opportunity to explore a field I knew nothing about, and for her patience, guidance, and unwavering support throughout all of the inevitable ups and downs of this project. I thank David Boas for his insights into the theory behind the techniques discussed in this thesis, and the invaluable feedback on the experiments. Thank you to Jason Sutin for his engineering expertise and meticulous supervision, without whom the construction of the prototype would have been impossible. Of course, thank you to the Optics Division, and the entirety of the MGH/HST Martinos Center, in particular to Bruce Rosen for sharing his wisdom in trying times.
+ 
+Outside of the Martinos Center, I want to thank Alexander Friedman for his mentorship during my undergraduate years, for pushing me to my maximum potential and beyond, and for preparing me for my graduate work. I thank my academic advisor, Dennis Freeman, for his patience, encouragement, advice, and availability despite increasingly hefty responsibilities. Finally, I thank Anne Hunter, who was the first to welcome me to the EECS department during my transfer: "I'm not making any promises, but so far everyone whom I have recommended has been accepted." Without her, I am convinced, Course 6 would have long ago collapsed into anarchy. 
+
+\cleardoublepage
+
+\addtocontents{toc}{\protect\thispagestyle{empty}}
+\tableofcontents
+
+\restoregeometry

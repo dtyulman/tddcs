@@ -1,0 +1,356 @@
+%% !TeX root = work.tex
+%\documentclass[thesis.tex]{subfiles}
+%\usepackage{xr-hyper} 
+%\externaldocument{intro}
+%\begin{document}
+
+\chapter{Completed Work} \label{sec:Chapter2}
+
+Having set the theoretical ground for time-domain diffuse correlation spectroscopy and alluded to some of the instrumentation, as well as experimental and computational techniques involved in estimating optical and dynamical properties of turbid media, we now discuss in detail the prototype construction, the initial measurements, and theoretical modeling that was done over the course of this project. These are clearly only the first steps and there is much more development to be done and theory to be explored. 
+
+\section{Instrument prototype construction} \label{sec:prototype_construction}
+The primary challenge in meeting the conflicting narrow-pulse-width and long-coherence requirements of TD-DCS is in constructing the laser source and detector hardware. A practical requirement for making measurements is to have a high photon flux, so a custom source laser with high peak power must be designed, and sensitive time-correlated single photon counting detectors must be used. 
+
+The final system design is shown in \autoref{fig:TD-DCS_instrument}. For this thesis work, only a subset of the system was implemented to demonstrate proof-of-concept, which we refer to as "first generation," and used for initial measurements. The "second generation" system was used in subsequent data collection for the theoretical discussion in \autoref{sec:theory}.
+
+\subsubsection{First generation}
+The source laser is a distributed Bragg reflector (DBR) laser (PH852DBR280TS, Photodigm, Inc.), with nominal light wavelength of 852 nanometers, continuous-wave coherence of 10 meters and 180 milliwatt average optical power (480 mW peak power). The pulses are created by electrically gain-switching the seed laser using a commercial picosecond pulsed laser driver (T165-9, Highland Technology, Inc.). Although the maximum repetition rate at which the TPSFs (4-5 ns long) from consecutive pulses will not overlap is 200MHz, the pulse board repetition rate is variable and we used it at no more that 150MHz. The pulse board also specifies that it is possible to vary the pulse width by injecting current pulses of varying width into the laser, but we found that the pulse width could not be increased beyond 100ps without corrupting the pulse shape, likely due to the physical limitations of the laser. 
+
+\begin{figure}[tb]
+    \begin{subfigure}[t]{0.5\textwidth}
+        \centering
+        \raisebox{0.75in}{\includegraphics[height=0.5in]{laser_package}}
+        \caption{}
+        \label{fig:laser_package}
+    \end{subfigure}~%
+    \begin{subfigure}[t]{0.5\textwidth}
+        \centering
+        \includegraphics[height=2in]{pulse_board}
+        \caption{}
+        \label{fig:pulse_board}
+    \end{subfigure}
+    \caption{(a) Photodigm Mercury TOSA package (b) Highland T165 pulse board with connected Type-1 butterfly-packaged laser.}
+\end{figure}
+
+The primary challenge here is controlling the laser with the pulse board. The laser comes in a Mercury TOSA package (\autoref{fig:laser_package}) where due to the length of the ribbon cable, there is an excess parasitic inductance. While this is not an issue in the CW operation for which it was designed, for our pulsed operation the cable must be removed and the laser pins connected directly to the pulse board. Furthermore, the pulse board connector is designed with a pin socket connection for a Type-1 butterfly-packaged
+laser diode (\autoref{fig:pulse_board}) that is incompatible with our laser. As such, the pin sockets must be removed and the laser pins soldered directly to the copper pads to which the pin sockets were attached. To account for the mismatch in pin spacing as shown in \autoref{fig:laser_board}, the gap is simply filled with solder -- an inelegant but effective solution.
+%\TODO{controlling the pulse board}
+
+\begin{figure}[tb]
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[height=2in]{laser_board_isometric}
+    \end{subfigure}~%
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[height=2in]{laser_board_top}
+    \end{subfigure}
+    \caption{SolidWorks model of the laser and pulse board connection. Copper pads represent electronic connections to the pulse board. For both the board and the laser, the cathode is shown in red and the anode in blue. Original files can be found at \coderepolink}
+    \label{fig:laser_board}
+\end{figure}
+
+The second challenge in the construction of the custom system is effectively coupling the light into the medium. The laser is mounted onto a custom machined aluminum frame as shown in \autoref{fig:laser_assembly}. The frame serves both as a heatsink and as an adapter for off-the shelf hardware used to for further shaping the laser beam. First, to avoid backreflections that may damage the laser, it is necessary to install an optical isolator at the output of the laser. For the 852nm wavelength of our laser, we used Thorlabs model IO-3D-850-VLP. To accurately position the isolator into the beam's path we mounted the isolator onto a Cage XY Translator (Thorlabs CXY-1) which was centered on the custom laser frame using 6mm diameter aluminum rods (Thorlabs ER4) as shown. Finally, to couple the light into an optical fiber for delivery into the medium, we used an adjustable FiberPort (Thorlabs PAF-X-15-PC-B). To mount the FiberPort onto our cage setup we used another XY translator which we modified with four screw holes to attach the FiberPort directly to the translating component. The FiberPort then offers an FC connection to an optical fiber. For our experiments, as with DCS, light is delivered to the medium using a multimode fiber. %, in our case 62.5 micron graded-index Thorlabs model \TODO{find model}. %\TODO{also maybe discuss what GI is and why it's nice}. 
+
+\begin{figure}[tb]
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[height=2in]{laser_assembly_front}
+    \end{subfigure}~%
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[height=2in]{laser_assembly_back}
+    \end{subfigure}
+    \caption{SolidWorks model of the custom pulsed laser assembly. In the final construction, the assembly is bolted to a monolithic heatsink (not shown). Original files can be found at \coderepolink}
+    \label{fig:laser_assembly}
+\end{figure}
+
+On the detection side, as with the other photon correlation techniques, to maximize $\beta$ and therefore the SNR, we would like to limit the detection area to a single speckle. In practice, this is not achievable so, as with DCS \cite[Section 6.2]{Boas1996thesis}, we instead use a single-mode fiber to collect scattered light from the medium and deliver it to the detector. For our experiments 5.6 micrometer single-mode silica fibers are used \TODO{model?}. The detector used is a novel red-enhanced, single-photon avalanche diode detector (SPAD), with a high temporal resolution, from the SPADlab at the Politecnico de Milano \cite{Gulinatti2012,Giudice2012}. 
+
+Although a custom time-to-digital converter (TDC) card is included in the final design, for the first-generation prototype we use an off-the-shelf Becker \& Hickl GmbH SPC\=/600 \cite{Becker2014} card to record the micro and macro photon arrival times. Although it was originally designed for fluorescence correlation spectroscopy \cite{Becker2005, Becker2014}, the data collection technique is identical\footnote{The signal for FCS, of course, is different -- the source of light is fluorescent markers on molecules}. The photon arrival data was then exported from the Becker \& Hickl software for offline data analysis (\autoref{sec:analysis}).
+
+
+\subsubsection{Second generation}
+Since the construction of the original prototype, the second-stage amplification was added to the laser source using a pumped taper diode amplifier (m2k-TA-0850-3000-DHP, m2k-laser GmbH), allowing much higher peak power to be used in experiments \cite{Kangara2014,Poelker1995}. Furthermore, the development of the custom data acquisition hardware was completed, incorporating the time-to-digital converter (TDC) card with the custom FPGA firmware to measure photon timing, and a USB3 interface (Cypress EZ-USB FX3) to transfer photon data to the computer. Furthermore, an alternative pulsed laser source was acquired (PicoQuant CPDL-S-760) with a nominal wavelength of 760nm, used in the experiments for \autoref{sec:theory}.
+
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=0.8\textwidth]{TD_DCS_instrument}
+    \caption{Schematic of the TD-DCS instrumentation}
+    \label{fig:TD-DCS_instrument}
+\end{figure}
+
+
+\section{Data analysis methods} \label{sec:analysis}
+
+\subsection{Computing the temporal point spread function}
+
+As discussed in the previous section, we use time-correlated single photon counting methods to record the \emph{micro} and \emph{macro} times of the photons. To compute the TPSF, we can use the exact approach discussed in \autoref{sec:TD-NIRS} and simply histogram the micro times (i.e. time-of-flight) for many photons to estimate the distribution of intensity over time. There are, however, several instrumentation-specific considerations to be addressed.
+
+\subsubsection{Reversed start-stop}
+Many TCSPC modules, including the Becker \& Hickl SPC\=/600 and our custom time-to-digital converter, operate in what is known as "reversed start-stop" mode. In this setup, rather than recording the time starting at the generation of the input laser pulse and stopping at the arrival of a photon, the "stopwatch" starts running at the arrival time of a photon, and stops at the generation of the next laser pulse. The advantage of this method is that since photons are typically detected at a much lower rate than the input pulse train (i.e. there is less than one photon detected on average from each laser pulse), we only need to operate the hardware at the photon detection rate, rather than the much higher laser pulse rate \cite{Becker2014}. This is easy to compensate for by simply reversing the time axis of the histogrammed TPSF. 
+
+\subsubsection{Folding}
+When recording signals with very high repetition rates it may be necessary to record the TPSF over several periods of the pulsed laser. That is, instead of using every laser pulse as the time-of-flight reference, we might use every other one, or every fourth, and so on. The Becker \& Hickl SPC\=/600 card allows frequency division values of $d = 1,2,4,8, \textnormal{or } 16$. Of course, we can only work with a single TPSF. One option is to pick one period of the recorded histogram and delete all of the other photons. This is clearly unfavorable since we are only using $1/d$ of the recorded photons for analysis and thus unnecessarily reducing the signal-to-noise ratio. A much better approach is to fold all of the histograms onto one, as shown in \autoref{fig:tpsf_folding}
+
+\begin{figure}[tb]
+    \centering
+    \begin{subfigure}{\textwidth}
+        \includegraphics{tpsf_raw}
+    \end{subfigure}    
+    \begin{subfigure}{\textwidth}
+        \includegraphics{tpsf_folded}
+    \end{subfigure}
+    \caption{TPSF folding. Top plot shows an example of a time-of-flight histogram collected using a Becker \& Hickl SPC\=/600 card with the frequency divider set to 8 (the eighth peak is out of range and therefore not recorded). Bottom left shows all the individual peaks shifted to line up with the first (each peak shown in its own color). Bottom right shows the sum of all the peaks to create the final TPSF (note the decrease in noise and the y-scale).}
+    \label{fig:tpsf_folding}
+\end{figure}
+
+We would like to simply shift the $k$\textsuperscript{th} additional "sub-TPSF" to the left by $kT$ where $T$ is the time between two consecutive pulses. In reality, however, the micro time is discretized: in \autoref{fig:tpsf_folding}, for instance, we have 4096 discrete time bins spanning 50ns. Since the repetition rate of the laser $T$ (e.g. $\frac{1}{100\textnormal{MHz}}$) is typically not an integer multiple of the time resolution of the micro time (e.g. $\frac{50\textnormal{ns}}{4096}$), a more careful folding procedure is necessary. We compute the autocorrelation function of the raw histogrammed signal. The peaks in the autocorrelation function then will correspond to the lags of the raw signal for which it is most similar with itself. Since all of the TPSFs in the raw signal should be identical, the lag values for the autocorrelation peaks are the precise values by which we should shift each "sub-TPSF" for the best overlap with the first "sub-TPSF." We can then subtract the shifts from the raw stored micro times accordingly. The implementation to perform the folding directly on the TPSF is provided in \autoref{code:fold_tpsf} and on the raw micro times in \autoref{code:fold_micro}.
+
+
+\subsection{Estimating $\mu_a$ and $\mu_s'$} \label{sec:est_opt_params}
+One of the advantages of TD-DCS is the capability of estimating the tissue optical parameters concurrently with the measurements of the dynamical properties. Having computed the temporal point spread function as in the previous section, we can then analyze it using all of the computational tools developed for TD-NIRS \cite{Torricelli2014}. Although this aspect is outside of the scope of this thesis, we include a brief discussion for completeness. 
+
+As mentioned in \autoref{sec:TD-NIRS}, the measured TPSF is actually not the true impulse response of the system. It is a convolution of the pathlength distribution function of the medium (i.e. the "true" impulse response of the medium) with the impulse response function (IRF) of the laser source and detection system. The resulting measured TPSF is therefore a broadened version of the true TPSF. In TD-NIRS, the laser pulses are a few picoseconds wide, and compared to the width of the "true" TPSF are negligible, so it is valid to ignore the broadening effects due to the instrumentation. Thus, we can directly fit the measured TPSF to estimate $\mu_a$ and $\mu_s'$. However, due to the coherence length requirements of DCS, we must use wider pulses that are hundreds of picoseconds and are no longer negligible compared to the width of the "true" TPSF, so fitting the measured TPSF directly will result in an error that is an increasing function of the pulse width. 
+
+To compensate for this broadening, there are several deconvolution algorithms that attempt to remove the broadening effects of the instrumentation IRF. Deconvolution, however, is in general an ill-posed inverse problem that does not have a unique solution. Solving ill-posed problems can be considered an entire field in itself, and we do not discuss it further. See \cite[ch. 20]{Handbook} for discussion of this issue in the context of TD-NIRS.  
+
+\subsection{Computing the autocorrelation function} \label{sec:acf_comp}
+As discussed in \autoref{sec:Coherent}, to estimate the dynamic properties of the medium, we measure the time-averaged autocorrelation function of the scattered light intensity $g_2(\tau) = \frac{\expval{I(0)I(\tau)}} {\expval{I(0)}}$ and find the parameters of the appropriate model to best fit the measured data. In this section we discuss the algorithms to compute this function from the photon-counting data. Since the intensity autocorrelation is equal to the photon autocorrelation, we will use $I(t)$ to denote the photon stream.
+
+\subsubsection{Direct summation}
+In general, by definition, the autocorrelation function $R(\cdot)$ of an arbitrary discrete-time signal $f(\cdot)$ is given by the convolution
+\begin{equation} \label{eq:acor_def}
+R(\tau) = (f*\bar{f})(\tau) 
+        \equiv \sum_{t\in\mathbb{Z}}f(t)\bar{f}(t-\tau) 
+        = \sum_{t\in\mathbb{Z}}f(t)f(t+\tau) 
+\end{equation}
+where $\bar{f}(t) = f(-t)$.
+
+Using this definition, given the intensity of the photon stream as a function of time, we can directly evaluate this sum for every value of $\tau$. This procedure, however, is time-consuming since only the photon arrival times are recorded and therefore must be converted to a temporal-raster form. For a measurement $L$ seconds long at a sampling frequency $\omega_s$, this is a vector of length $T = L\omega_s$, containing a 1 if a photon arrived within that time bin and 0 otherwise, (e.g. if the vector of photon "macro" times is $\vb{m} = (1,4,5,7)$, then $I(t) = (1,0,0,1,1,0,1)$, see \autoref{code:times_to_bins}). 
+
+Since $I$ is a finite-length vector (or alternatively, we can consider it to be a discrete-time function that is equal to zero outside of the interval $[0,T]$), it only makes sense to compute $R(\tau)$ for $\tau \leq T$, since $R(\tau) = 0$ for $\tau > T$. Furthermore, we are not interested in lags beyond which the signal has fully decorrelated, so we only need to consider $\tau \leq \tau_{max}$. In our application, $\tau_{max} << T$. Thus, the computational complexity of this algorithm is $\Theta(T\cdot\tau_{max})$ since we are summing $T$ terms $\tau_{max}$ times. 
+
+Finally, note that computing the autocorrelation of the intensity $I(t)$ according to \autoref{eq:acor_def} results in the \emph{unnormalized} autocorrelation $G_2(\tau)$. Normalizing, we get 
+\begin{equation}
+g_2(\tau) = \frac{T}{N^2}G_2(\tau) 
+\end{equation}
+where $N$ is the total number of photons collected and $T$ is the number of time bins as defined above, so $G_2(0) = \frac{N^2}{T}$
+
+
+
+\subsubsection{Fast Fourier transform}
+Since the convolution of two signals in the time-domain is equivalent to their multiplication in the Fourier domain \cite{OW1997}, given an arbitrary function $f(t)$ we can instead compute $F(k)$, its discrete Fourier transform (DFT) (note that this is the discrete analog of \autoref{eq:fourier})
+\begin{equation}
+F(k) = \mathcal{F}\{f\} \equiv \sum_{t=0}^{T-1}f(t)e^{-\frac{2\pi j kt}{T}}, ~k\in\mathbb{Z}
+\end{equation}
+and compute the autocorrelation by
+\begin{equation} \label{eq:acor_fft}
+R(\tau) = \mathcal{F}^{-1}\left\lbrace \mathcal{F}\{f\} \cdot \mathcal{F}\{\bar{f}\} \right\rbrace
+\end{equation}
+where the inverse DFT is given by
+\begin{equation}
+\mathcal{F}^{-1} \{F\} \equiv \sum_{t=0}^{T-1}F(k)e^{+\frac{2\pi j kt}{T}}, ~k\in\mathbb{Z}
+\end{equation}
+
+The fast Fourier transform (FFT) algorithm allows us to compute the DFT as well as the inverse DFT with computational complexity $\Theta(T\log T)$. The element-wise multiplication in the Fourier domain takes $\Theta(T)$ time, so the entire algorithm has computational complexity $\Theta(T\log T)$ \cite[ch. 30]{CLRS2009}. Note that this method does not allow us to specify the longest lag we are interested in $\tau_{max}$ and computes the autocorrelation for all of the values of $\tau$ such that $f(t)$ and $f(t+\tau)$ overlap. In other words, $\tau_{max}=T$. As before, letting $f(t)=I(t)$ in \autoref{eq:acor_fft} gives us $G_2(\tau)$ so to compute $g_2(\tau)$ normalization is done as in the previous section. 
+
+\subsubsection{Histogrammed interarrival times}
+A much faster method for our application operates directly on the photon arrival times. To see the equivalence of this method with the direct summation method described above, consider \autoref{eq:acor_def}. First, observe that in our application, $f(t) = 0~\textnormal{or}~1~\forall t$, so if $R(\tau) = k$ for some $\tau$, then there were exactly $k$ pairs of photons arriving $\tau$ time steps apart. Therefore, for every value of $\tau$ we are interested in, we would like to count all pairs of photons that are $\tau$ time steps apart. The algorithm is outlined as follows.
+
+Suppose we have recorded a length-$N$ vector $\vb{m}$ of photon arrival times (i.e. "macro" times). We initialize a length-$\tau_{max}$ array of zeros $R$ that we will use to histogram the interarrival times of the photon pairs.
+
+The $i^{th}$ iteration of the algorithm considers entry $m_i$ in $\vb{m}$ as the first photon of a pair. It then, one by one, looks at all the subsequent photons $m_j,~(j>i)$ and calculates $m_j-m_i$, the interarrival time of the photon pair. Suppose $m_j-m_i=\tau$, so we increment $R(\tau) \leftarrow R(\tau) + 1$. Once we reach an entry $m_{j^*}$ such that $m_{j^*}-m_i>\tau_{max}$, we stop this iteration since $\vb{m}$ is a strictly increasing sequence and we know $m_{k}-m_i>\tau_{max}$ for all $k>j^*$. We increment $i$ and begin the next iteration. We iterate until $i = N$ and all the photon pairs that are less than $\tau_{max}$ seconds apart have been considered.
+
+%% Although this works (and might be more intuitive) this is not quite right and is actually slower since we're performing unnecessary computations and discarding values %%
+%For a length-$N$ vector $\vb{m}$ of photon arrival times (i.e. "macro" times), we begin by computing the first difference $\vb{m^{(1)}}$, i.e. $m^{(1)}_i=m_{i+1}-m_i$. Note that since $\vb{m}$ is strictly increasing, all entries in $\vb{m^{(1)}}$ are positive. Next, we histogram the entries in $\vb{m^{(1)}}$ into the vector $R$ so that $R(\tau)$ contains the number of occurrences of $\tau$ in $\vb{m^{(1)}}$, in other words, the number of \emph{consecutive} photons in $\vb{m}$ that are $\tau$ apart. Since we are not concerned with lags greater than $\tau_{max}$, discard all entries $m^{(1)}_i > \tau_{max}$. 
+%
+%There might, however, exist non-consecutive photons that are $\tau$ apart (e.g. if $\vb{m} = (1,4,5,7)$, the first and second entries are $\tau=3$ time steps apart, as well as the second and fourth). So, we next compute the difference in arrival times of every other photon $\vb{m^{(2)}}$, i.e. $m^{(2)}_i=m_{i+2}-m_i$. Histogram and add these values into $R$, so that $R(\tau)$ now contains the number of occurrences of $\tau$ in both $\vb{m^{(1)}}$ and in $\vb{m^{(2)}}$. Again, discard all entries $m^{(2)}_i > \tau_{max}$. Continue this procedure until $m^{(k)}_i > \tau_{max}~\forall i$.
+
+If we were interested in computing the longest possible lag (i.e. $\tau_{max} = T$), we would have to consider all pairs of photons, so the worst-case computational complexity is $O(N^2)$. Note that this is a function of the number of photons $N$, rather than the time of the experiment $T$. Since we are only interested in lags $\tau \leq \tau_{max}$, the complexity is actually much better since each iteration only looks at photons that arrived less than $\tau_{max}$ seconds after the one under consideration for that iteration. If the average flux is $\phi$ photons per time step, the expected number of pairs of photons considered in each iteration is $\phi\tau_{max}$ (note $\phi T=N$). Therefore, in expectation the runtime is $\Theta(N\cdot\phi\tau_{max})$
+
+What we have computed in the vector $R$ is, in fact, the unnormalized measured intensity autocorrelation function $G_2(\tau)$. Once again, we normalize these values as before to compute $g_2(\tau)$. See \autoref{code:acorr_times} for an implementation of this algorithm. 
+
+\subsubsection{Progressive binning/Multiple tau} 
+For completeness, we include an alternative fast method for computing the autocorrelation function, as used in the Becker \& Hickl photon counting software, \cite{Becker2014} as it is representative of the ideas used in many of the current digital correlators. 
+
+We begin by computing the autocorrelation as in \ref{eq:acor_def}. In other words,  after converting the photon arrival times to the temporal-raster form, we shift our signal to get $I(t+\tau)$, element-wise multiply $I(t)$ and $I(t+\tau)$, and sum all the values in the resulting vector. After $k_\tau$ shifts (where $k_\tau$ is a user-defined parameter), we re-bin the photon-arrival raster by a factor of three: for every three time bins of length $l$ we replace it with a single time bin of length $3l$, and if a photon arrived in any of the three original time bins, the new bin contains a 1 and 0 otherwise.  We then compute the autocorrelation on the re-binned signal as described. We continue this process (\autoref{fig:prog_bin}) until we reach the desired number of lags. 
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=4.5in]{prog_bin}
+    \caption{Autocorrelation with progressive binning. Reprinted from \cite[p.~461]{Becker2014}}
+    \label{fig:prog_bin}
+\end{figure}
+
+Note that due to the repeated re-binning of the photon stream, this procedure only calculates an estimate of the autocorrelation function, thus there is a trade-off between runtime and accuracy \cite{Magatti2001}. 
+
+To reduce noise, although we perform the autocorrelation using the histogramming method described above, for display purposes we re-bin the results to look like the results produced by a multi-tau algorithm (\autoref{fig:rebinned_example}). Observe that with longer lag times, there are fewer photons contributing to the autocorrelation so the noise increases. Thus, it makes sense to smooth the autocorrelation function by an increasingly wider window. See \autoref{code:rebin_to_multitau} for an implementation.
+
+\begin{figure}[tb]
+\includegraphics{rebin_example}
+\centering
+\caption{Exact autocorrelation computed by histogramming interarrival times and re-binned with progressively larger bins $(k_\tau=30)$ for visualization. (Note that the peak at the smallest lags is an artifact due to the detection hardware. Since unpolarized light was used here, the maximum value for $\beta$ is 0.5)}
+\label{fig:rebinned_example}
+\end{figure}
+
+
+\subsection{Estimating $\beta$ and $BFi$} \label{sec:fit_beta_bfi}
+Having computed the measured autocorrelation function as in the previous section, we can attempt to estimate the model parameters of interest. Although we can estimate $\mu_a$ and $\mu_s'$ by fitting the theoretical TPSF to the measured data as is done in practice for TD-NIRS (\autoref{sec:TD-NIRS} or \autoref{sec:est_opt_params}), for reliability in these experiements, we measure the optical properties of the medium independently using a commercial FD-NIRS instrument \cite{MetaOx}.
+
+Since in our experimental setup the source-detector separation is sufficiently small compared to the depth and surface area of the phantom, we estimate it as a semi-infinite medium. The theoretical DCS autocorrelation function for a semi-infinite medium in a reflectance setup is given by \autoref{eq:g1_DCS_seminf}. We use the Levenberg-Marquardt algorithm \cite{More1978}, a common nonlinear least squares fitting procedure, to find the blood flow index ($BFi$, given by $\alpha D$ in \autoref{eq:g1_DCS_seminf}) parameter which results in the closest match between the data and the theoretical form. 
+
+Since what we have measured, however, is the intensity autocorrelation function $g_2$, related to $g_1$ through \autoref{eq:siegert}, there is another unknown parameter $\beta$ that needs to be estimated. Since $\beta$ depends on the spatial and temporal coherence properties of the light in the experimental setup, it is practical to directly fit this value simultaneously with the $BFi$.
+
+It is also important to note, however, that due to artifacts such as afterpulsing which arise from feedback in the detector hardware \cite{Zhao2003}, the autocorrelation values for the smallest values of $\tau$ is not valid and should be ignored for the purposes of fitting. As shown in \autoref{fig:acf_fit_example}, only a subset of the measured autocorrelation curve is used for the fitting procedure. The range for fitting is chosen visually, although the typical minimum lag used is around $10^{-5}$ seconds. The implementation for estimating the parameters is given in \autoref{code:dcs_fit}, using the $g_2(\tau)$ function defined in \autoref{code:g2}.
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics{CW_acf_fit}  
+    \caption{The computed autocorrelation function and the best model that fits the data. Short lags are invalid and are ignored for the purpose of fitting the data.}
+    \label{fig:acf_fit_example}  
+\end{figure}
+
+\subsection{Time-gating the photons} \label{sec:time-gate}
+We now reach the essential aspect of time-domain diffuse correlation spectroscopy -- time-gating the photons and thus measuring the autocorrelation using a subset of photons that traveled a fixed pathlength through the medium. Since measurements are performed in the reflectance geometry (\autoref{fig:reflectance}), short pathlengths correspond to photons in the superficial layers, and long pathlengths to photons in the deeper layers. Thus, in the neuromonitoring setting, if we compute the autocorrelation of "deep" photons, we can measure the cortical blood flow avoiding the confounds from the superficial layers. 
+
+Since we have the recording of the full photon stream with micro and macro times for each photon, we can simply select the photons whose micro times correspond to the portion of the TPSF we wish to analyze. Having selected the photons with micro times within a specified range, we then compute the autocorrelation using only that subset of photons. We then fit that autocorrelation using the appropriate model as described in the previous section to estimate the $BFi$ in the corresponding layer of the medium.
+
+\section{Results}
+In this section, we discuss the three primary experiments conducted for validation of various aspects of the TD-DCS technique. All of the measurements are conducted using "phantoms" -- artificial objects designed to mimic biological samples for the purposes of device testing. Milk is a common choice for phantoms for diffuse near-infrared biomedical optical devices, due to its high scattering and low absorption coefficients resembling biological tissue, as well as its low price and easy availability. Liquid silicone as well as a polystyrene microsphere solution were also used for other phantoms, described in detail in the following subsections.  
+
+\subsection{Initial measurements}
+
+For the initial test of TD-DCS using the first-generation system, we measured the flow properties for four different dilutions of whole milk with water (1:0, 1:1, 1:2, and 1:3 milk-to-water ratios), as well as for a solution of polystyrene microspheres (1.73\textmu m diameter, 0.0013\textmu m\textsuperscript{-1} concentration, 1.55 refractive index). Due to the fat content in milk, its flow properties are temperature dependent and to normalize for this each of the five solutions was brought to room temperature (24\textdegree C). Due to the low average power of the pulsed laser without the amplifier %({\color{red} [TODO peak, average]}),
+to optimize the measured light intensity the measurement was made in a standard $12.5\times 12.5\times 45$~mm cuvette in the transmission geometry. %For each measurement, approximately {\color{red} [TODO photons]} were collected over {\color{red} [TODO seconds]}. 
+At $\lambda=850$nm, the scattering coefficient for whole milk was assumed to be $\mu_s'=26 \textnormal{cm}^{-1}$, and proportional to the concentration (i.e. $\mu_s'=13 \textnormal{cm}^{-1}$ for a 1:1 dilution, $\mu_s'=8.67 \textnormal{cm}^{-1}$ for 1:2, $\mu_s'=6.5 \textnormal{cm}^{-1}$ for 1:3). The scattering coefficient for the microspheres is calculated using Mie theory \cite{MieCalc} to be $\mu_s'=4.9 \textnormal{cm}^{-1}$. The absorption coefficient in all five samples was assumed to be equal to water, $\mu_a'=0.042 \textnormal{cm}^{-1}$.
+
+
+Each measurement was taken three times, both with the first-generation TD-DCS system and with a CW-DCS system for comparison. The results are summarized in \autoref{fig:init_meas_bfi}. The average values are reported, the error bars represent one standard deviation. As evident in the figure, the time-domain measurements systematically overestimate BFi (in this case it is equivalent to the Brownian diffusion coefficient $D_B$). This is, in fact, contradictory to the results previously seen in the context of varying the coherence length of the source. Bellini et. al., for example, show a slower decay rate for measurements using short-coherence light in comparison to a coherent source \cite{Bellini1991}.
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics{initial_result_cuvette}
+    \caption{}
+    \label{fig:init_meas_bfi}
+\end{figure}
+
+\subsection{Two-layer phantom} \label{sec:two_layer}
+To validate the depth-resolving capabilities of TD-DCS, we perform measurements in a simple two-layer phantom. The phantom consists of two immiscible liquids with varying viscosities held in a standard 500mL beaker. The bottom layer is a 1-to-3 dilution of whole milk and water as in the previous section, and the top layer is liquid silicone with added pigment to modify its scattering properties. As above, the absorption and scattering coefficients for diluted milk are $\mu_s'=6.5 \textnormal{cm}^{-1}$ and $\mu_a'=.042 \textnormal{cm}^{-1}$. For the liquid silicone $\mu_s'=3.7 \textnormal{cm}^{-1}$ and $\mu_a'=.035 \textnormal{cm}^{-1}$, measured using an FD-NIRS system \cite{MetaOx}.
+
+Since the liquid silicone is qualitatively more viscous than diluted milk, we should expect that the BFi is lower in the top layer than the bottom layer. For the purposes of this analysis, all photons arriving prior to the peak of the TPSF are considered "early" and those arriving after the peak considered "late." We compute two autocorrelation functons, using "early" and "late" photons and fit them with a semi-infinite homogeneous model to get a first estimate on the BFi values. The results are shown in \autoref{fig:early_late} for a phantom with a 2.5mm thick layer of liquid silicon on the surface of the diluted milk. Although a semi-infinite model is not fully appropriate for this medium, as evidenced by the imperfect fit in the figure, we nevertheless see a 45\% increase in BFi from the more viscus top layer to the bottom layer.
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics{early_late}
+    \caption{Autocorrelation curves and the corresponding BFi estimates computed in a two-layer phantom using only the early photons or only the late photons. As expected, the BFi is smaller for early photons, corresponding to the more viscous top layer.}
+    \label{fig:early_late}
+\end{figure}
+
+\subsection{Measured vs. theoretical values of $\beta$} \label{sec:theory}
+In all of the theoretical derivations and models of autocorrelation functions thus far, we have implicitly assumed that the coherence time of the laser source is infinite. In the case of CW-DCS, this is typically valid, since the coherence time of a continuous wave laser can be on the order of 30 nanoseconds (which, in a vacuum, equates to a coherence length of 9 meters). In comparison to the time-of-flight of a photon through tissue, which is no more than several nanoseconds, this is a valid assumption. 
+
+Not all laser sources, however, are that strongly coherent. In 1991 Bellini et. al. published a paper addressing the problem of making DLS and DWS measurements using a source with finite coherence length \cite{Bellini1991}. According to their model, assuming the spectrum of the laser source is Gaussian, the intensity autocorrelation function is given by
+\begin{equation} \label{eq:g2_bellini}
+g_2(\tau) = 1 + \int\limits_{0}^{\infty} \int\limits_{0}^{\infty} P(s)~P(s')~ g_1(s,\tau)~ g_1(s',\tau)~ e^{-2\left(\frac{s-s'}{l_c}\right)^2} ds~ds'
+\end{equation}
+
+Consider the photons traveling through the medium with a pathlength $s$ and the photons with pathlength $s'$. If the difference in pathlengths $s-s'$ is greater than the coherence length $l_c$ of the light, the phase of the photons is uncorrelated simply by virtue of the coherence of the light itself, irrespective of the loss of coherence caused by scattering from moving particles in the medium. As a result, the baseline measured intensity autocorrelation function at lags greater than the coherence time will be considerably smaller than it would for a coherent light source. Since the time resolution of a typical correlator is not high enough to detect this baseline drop in autocorrelation, it appears that $\beta$, i.e. the value of $g_2(\tau)$ with $\tau$ extrapolated to zero, is significantly lower than it would be for coherent light. Thus, the \emph{effective} $\beta$ depends not only on the detected coherence area as discussed in \autoref{sec:DLS}, but also on the temporal coherence of the source. 
+
+As noted before (\autoref{sec:TD-DCS}), since we're using pulsed laser light, the temporal coherence length becomes upper bounded by the temporal width of the pulse. Thus, we can use \autoref{eq:g2_bellini} to model the intensity autocorrelation $g_2$ for varying coherence lengths, as shown in \autoref{fig:g2_bellini_example}. The code to run this simulation is provided in \autoref{code:g2_sim} Assuming the pulse is transform-limited, we simply set $l_c = v\Delta t$, where $\Delta t$ is the temporal width of the pulse and $v$ is the speed of light in the medium. Effectively, this models $g_2$ using all of the photons from the TPSF. We would also like to investigate from a theoretical standpoint the effects of time-gating the photons as in \autoref{sec:time-gate}.
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics{vary_coh} 
+    \caption{Simulated $g_2(\tau)$ using \autoref{eq:g2_bellini}, varying source coherence, for a homogeneous semi-infinite medium with $g_1(s,\tau)$ given by \autoref{eq:g1_pathlength} and $P(s)$ given by normalizing \autoref{eq:TPSF}, $\mu_a=.05 \textnormal{cm}^{-1}$, $\mu_s'=10 \textnormal{cm}^{-1}$, $\lambda=800\textnormal{nm}$, $\rho=10 \textnormal{mm}$, $D_B=10^{-9} \textnormal{ cm}^2/\textnormal{s}$}
+    \label{fig:g2_bellini_example}
+\end{figure}
+
+To model the time-gating, we simply replace $P(s)$ in \autoref{eq:g2_bellini} by $P'(s)$, a pathlength distribution that corresponds to the subset of pathlenths that are included in the time-gate, given by:
+\begin{equation} \label{eq:modified_bellini_pdf}
+P'(s) = \frac{P(s)~\textnormal{rect}(s; s_{min}, s_{max})}{\int\limits_{0}^{\infty} P(s)~\textnormal{rect}(s; s_{min}, s_{max}) ~ds}   
+\end{equation}
+where
+\begin{equation}
+\textnormal{rect}(s; s_{min}, s_{max}) = 
+\begin{cases}
+1,~s_{min} \leq s \leq s_{max} \\
+0,~\textnormal{otherwise} \\
+\end{cases}
+\end{equation} 
+is the rectangle, or boxcar, function that controls the limits of the time-gate by specifying the shortest and longest pathlengths to include in the gate, $s_{min}$ and $s_{max}$, respectively. The denominator is an normalization term to ensure that $P'(s)$ is a proper probability density function and integrates to $1$. 
+
+\subsubsection{Varying gate width}
+The time-gating procedure removes all photons outside the specified gate limits, so only photons whose pathlengths differ by no more than $s_{max}-s_{min}$ remain. Thus, we are computing the autocorrelation using photons which have similar pathlengths and thus have not lost their phase relationship simply by virtue of the finite coherence length. In the limiting case, if we consider only the photons which have a single pathlength $s=s_{min}=s_{max}$, the only contribution to their loss of coherence comes from interaction with the moving particles in the medium, and not from the coherence properties of the incident light\footnote{This is why the coherence requirements for DLS are not as strict as for DWS or DCS: since the light is scattered exactly once, there is only one pathlength to consider.}. Since coherence is not a binary phenomenon (\autoref{sec:fundamentals_coherence}), we would expect that wider time-gates would result in a lower value of $\beta$, with a maximum value of 0.5 (since we're using unpolarized light, c.f. \autoref{sec:DWS}) for an infinitely narrow gate as described above, and a minimum value equal to the CW value for an infinitely wide gate that considers all of the photons. 
+
+To demonstrate this behavior, we record data from a simple semi-infinite phantom and analyze the data with varying widths of the time-gate. The measurements are made with the second-generation system with the secondary PicoQuant laser ($\lambda=760$nm), as described in \autoref{sec:prototype_construction}, using a 1-to-4 diluted whole milk phantom held in a standard 500mL beaker. A reflectance geometry was used with the source and detector fibers lowered directly onto the surface of the liquid at three source-detector separations (5, 10, 15mm). These distances are small compared to the surface area and depth of the medium, which is therefore modeled as semi-infinite. We then compute the autocorrelation using subsets of photons corresponding to gate widths increasing in 50ps increments and find the value of the effective $\beta$ for each one, following the analysis in \autoref{sec:fit_beta_bfi}. For the purpose of fitting in this experiment, the values of $\mu_a=0.51\textnormal{cm}^{-1}$ and $\mu_s'=5.67\textnormal{cm}^{-1}$ are obtained using a separate FD-NIRS system \cite{MetaOx}. The results for a 10mm separation are shown in \autoref{fig:beta_width_meas_10mm}. 
+
+To compare the results of the measurement with the theoretical predictions, we vary the gate width in the simulated model of $g_2$ as described above, using theoretical models of $g_1$ and $P(s)$ for a semi-infinite homogeneous medium using the values of $\mu_a$, $\mu_s'$, $\rho$, and $\lambda$ prescribed by the experimental setup. Note that since we are only looking at the value of $\beta$, i.e. $g_2(\tau=0)$, the $D_B$ parameter is irrelevant since it only affects the decay rate of the function and not the intercept. We assume that the pulses (100ps full width at half-max) are transform-limited and therefore the coherence length $l_c = v \cdot [100\textnormal{ps}]$ where $v = \frac{c}{n}$ for the assumed refractive index of the medium $n=1.33$. As the computed $\beta$ values show in comparison with the measured values, this is likely to be an over-estimate. For perspective, we also calculate the values using an assumed coherence time of 10ps. The results for a 10mm separation are shown in \autoref{fig:beta_width_sim_10mm}. 
+
+Although the simulations overestimate the absolute values of $\beta$, the simulated results shown a similar relative trend as the gate width increases, and a similar total drop in $\beta$ from the shortest to the longest gate.
+
+
+\begin{sidewaysfigure}
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics{beta_width_meas_10mm_10MHz}
+        \caption{}
+    \label{fig:beta_width_meas_10mm}
+    \end{subfigure}~%
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics{beta_width_sim_10mm_coh10and100ps}
+        \caption{}
+        \label{fig:beta_width_sim_10mm}
+    \end{subfigure}
+    \caption{Effects on $\beta$ of varying gate delay from (a) measurements and (b) simulations. $\rho=10\textnormal{mm}$, $\mu_a=0.51\textnormal{cm}^{-1}$, $\mu_s'=5.67\textnormal{cm}^{-1}$ }
+    \label{fig:beta_width_10mm}
+\end{sidewaysfigure}
+
+
+\subsubsection{Varying gate delay}
+As has already been discussed, varying the delay of the time gate would give us the autocorrelation of subsets of photons which traveled different depths into the medium\footnote{This is not strictly true since it's possible that a photon took a long path and remained in the superficial layers. However, it is more likely that it, in fact, did reach a deeper layer than a photon with a short pathlength.}, which enables the estimation of dynamical properties at varying depths. In practice, we also observe that increasing the gate delay results in a decrease in $\beta$. 
+
+To demonstrate this, we analyze the data from the semi-infinite homogeneous diluted milk phantom described above with a fixed 50ps gate width, and changing the gate delay in 50ps increments. An analogous simulation is performed for comparison. Results for the 10mm separation are shown in \autoref{fig:beta_delay_10mm}.
+
+The limitations of this model are now more evident as fails to fully describe the observations. Notice that in the measured data, $\beta$ continues to decrease with increasing gate delay, whereas according to the simulation it plateaus beyond the initial drop. Also note the relative drop in $\beta$ for the simulation is extremely small, compared to the much more significant drop observed in the measurements. Furthermore, this cannot simply be explained by the coherence time of the laser, as evidenced by the points corresponding to the 10ps coherence time in the simulation, which exhibit a small initial drop and plateau.  
+
+
+\begin{sidewaysfigure}
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics{beta_delay_meas_10mm_10MHz}
+        \caption{}
+        \label{fig:beta_delay_meas_10mm}
+    \end{subfigure}~%
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics{beta_delay_sim_10mm_coh10and100ps_gate50ps}
+        \caption{}
+        \label{fig:beta_delay_sim_10mm}
+    \end{subfigure}
+    \caption{Effects on $\beta$ of varying gate delay from (a) measurements and (b) simulations.}
+    \label{fig:beta_delay_10mm}
+\end{sidewaysfigure}
+
+
+
+%~\\ \TODO{include plots for measured/sim for 5,10,15mm at 10,40MHz in appendix}
+
+
+\section{Conclusions and further work}
+There are several further considerations to be addressed as immediate next steps after this work. When computing the depth-resolved flow values in \autoref{sec:two_layer}, we arbitrarily split the TPSF into "early" and "late" photons using the peak as the midpoint. An alternative might be to use the average time-of-flight, or the median. Furthermore, it is important to note that the correct location to split the TPSF will depend on the thickness of the top layer and is unlikely to be in the "middle" by any of these metrics. A first approach may be to exhaustively split the TPSF at every plausible location, and recompute both the "early" and "late" autocorrelation functions and choose the splitting point to be the one that gives results most closely resembling those for each of the homogeneous media separately.
+
+It is also necessary to consider the correlation diffusion model itself. It may be more appropriate to use a slab to model the propagation of "early" photons through the top layer, and a two-layer semi-infinite medium for the "late" photons. Note that if the absorption and scattering coefficients differ in the two layers, when computing the autocorrelation fit in the bottom layer it may not be fully appropriate to simply use the optical properties of the bottom layer -- the photons reaching the bottom layer have already been scattered through the top layer and thus cannot be analyzed using the optical properties of the bottom layer alone. This question is further complicated for multi-layer models resembling biological systems of interest. The human head, for instance, has been modeled with up to 15 layers \cite{Steinbrink2001}.
+
+Another thing to consider regarding the correlation diffusion model is that the solution for $G_1(\tau)$ (regardless of the geometry) assumes a continuous "source" of correlation that then diffuses and reaches a steady-state. For a continuous-wave light source, this model is intuitively satisfying since the light propagation also follows a steady-state diffusion solution. Further investigation into the validity of this assumption for a pulsed light source is necessary, as the correlation may in fact not diffuse according to a steady-state "correlation source" and there may be a drop in the autocorrelation function that is not accounted for by the finite coherence length model introduced by Bellini et. al. \cite{Bellini1991}. 
+
+To model the effects of time-gating, we have modified the model from Bellini et. al. to instead consider subsets of the pathlength distribution. This model, however, does not fully account for our observations. To explain the mismatch between the predicted and measured values of $\beta$, there are not only theoretical developments to consider but also practical. For instance, it may be necessary to look for artifacts in the laser pulse itself, as it may violate some of our assumptions. One such artifact is mode-hopping, where the laser switches longitudinal modes, resulting in discrete jumps in the wavelength \cite{Heumier1992} during operation. It is possible to address mode-hopping by operating at a lower power. Another is that the pulse may not be transform limited and the electric field may, for example, exhibit a "chirp" (i.e. the frequency of the electric field increases with time) during the pulse. In this case, transform limiting can be achieved by pulse compression. From a modeling perspective, if there is a chirp, the effective wavelength changes with varying gate delay, which is not considered for in the theoretical account given in \autoref{sec:theory}.
+
+Intermodal dispersion in the optical fibers may be yet another source of error due to instrumentation. If there is more than one propagation mode in the fiber (i.e. a multimode fiber), there will be broadening of the pulse since some rays will travel a shorter path through the fiber than others. While it can be neglected in CW operation, this broadening can be on the order of tens of picoseconds per meter, a significant portion of the pulse width itself. The impacts of this effect have so far been ignored in the analysis but need to be addressed. It is possible to reduce modal dispersion using a graded-index (GI) fiber to a few picoseconds per meter, or eliminate it using a single-mode fiber at the expense of light intensity.
+
+To conclude, these have been only the first steps in constructing a clinically viable time-domain diffuse correlation spectroscopy system. We have constructed a first prototype and successfully demonstrated the viability of the method with initial measurements that produce reasonable estimates of Brownian diffusion in a phantom, compared to the measurements made by CW-DCS. We furthermore showed proof-of-concept with depth-resolved measurements in a two-layer phantom. We finally discussed the limitations of the current theoretical developments, which only partially explain the observations made using TD-DCS measurements. Despite its early stages, this is undoubtedly an extremely promising technique for highly reliable measurements of blood flow and oxygenation, with a rich potential for biomedical optical imaging applications.
+
+
+
+%\end{document}

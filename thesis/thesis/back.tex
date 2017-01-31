@@ -1,0 +1,50 @@
+%\documentclass[thesis.tex]{subfiles}
+%\begin{document}
+    
+\appendix
+
+%\chapter{Table of $g_1(\tau)$ and $P(s)$}
+%\begin{table}[h]
+%\centering
+%\begin{tabular}{| c | c | c | }\hline
+%	                  Experiment                   & $g_1(\tau)$ & $P(s)$ \\ \hline
+%	  Reflectance geometry, semi-infinite medium   &             &  \\
+%	Reflectance geometry, infinite slab width $L$  &             &  \\
+%	Transmission geometry, infinite slab width $L$ &             &  \\
+%	        Point source, infinite medium          &             &  \\ \hline
+%\end{tabular}
+%\end{table}
+
+\chapter{Code library}
+All code below was written in \textsc{Matlab} 2015b. The most recent version, along with additional functions for visualization, can be found at \coderepolink.
+
+\section{\texttt{times\_to\_bins.m}} \label{code:times_to_bins}
+\lstinputlisting[language=Matlab]{../../code/lib/acorr/times_to_bins.m}
+
+\section{\texttt{acorr\_times.m}} \label{code:acorr_times}
+\lstinputlisting[language=Matlab]{../../code/lib/acorr/acorr_times.m}
+
+\section{\texttt{rebin\_to\_multitau.m}} \label{code:rebin_to_multitau}
+\lstinputlisting[language=Matlab]{../../code/lib/acorr/rebin_to_multitau.m}
+
+\section{\texttt{dcs\_fit.m}} \label{code:dcs_fit}
+\lstinputlisting[language=Matlab]{../../code/lib/fit/dcs_fit.m}
+
+\section{\texttt{g2.m}} \label{code:g2}
+\lstinputlisting[language=Matlab]{../../code/lib/fit/dcs_fn.m}
+%%TODO rename this to g2.m
+
+\section{\texttt{fold\_tpsf.m}} \label{code:fold_tpsf}
+\lstinputlisting[language=Matlab]{../../code/lib/tpsf/fold_tpsf.m}
+
+\section{\texttt{fold\_micro.m}} \label{code:fold_micro}
+\lstinputlisting[language=Matlab]{../../code/lib/tpsf/fold_micro.m}
+
+\section{\texttt{g2\_sim.m}} \label{code:g2_sim}
+\lstinputlisting[language=Matlab]{../../code/lib/sims/g2sim.m}
+
+
+
+\printbibliography[heading=bibintoc, title={References}]
+
+%\end{document}

@@ -1,0 +1,513 @@
+\chapter{Introduction and Background} \label{sec:Chapter1}
+
+Since the late 19th century, when Santiago Ram{\'o}n y Cajal established the neuron doctrine -- the groundbreaking idea that the brain is made up of individual cells -- the field of neuroscience has grown at a rapid rate. Numerous techniques for monitoring the brain in both academic and clinical settings have been developed. Electroencephalography (EEG) or magnetoencephalography (MEG), for example, records the electrical or magnetic fields resulting from activity of large groups of neurons. Functional magnetic resonance imaging (fMRI), measures a correlate of neural activity caused by the presence of oxygenated blood in the working area of the brain. The ideal neuroimaging technology would be portable, non-invasive, and have both high spatial and temporal resolution (\autoref{fig:time_space_resolution}). Diffuse optics, a field expanding at an exponential rate, provides us with the potential to meet many of these requirements.
+
+Near-infrared spectroscopy (NIRS), as the name implies, utilizes near-infrared light to measure optical properties of a medium. In the neuroimaging context, this allows us to localize blood oxy- and deoxy-hemoglobin concentrations and thus quantify functional activity in the brain \cite{Boas2014}. In the clinical setting it can be used for diagnostics such as breast cancer, heart disease, muscle pathophysiology, and many others \cite{Sakudo2016}.
+
+Diffuse correlation spectroscopy (DCS) is a complementary technique that takes advantage of the coherence of light to measure dynamical properties of a medium such as blood flow in tissue \cite{Durduran2014, Buckley2014}. Conditions such as cardiovascular disease, stroke, head trauma, peripheral arterial disease, and cancer can be related to abnormal blood flow, thus DCS can provide information for diagnostics of diseases and metrics for effectiveness of treatments.
+
+The combination of these techniques provides us with even more powerful information. If we combine DCS blood flow data with NIRS measurements of hemoglobin concentrations, we can then calculate the cerebral metabolic rate of oxygen consumption, which is a reliable measure of brain health \cite{Durduran2010, Lin2013}.
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=0.6\textwidth]{spatial_temporal_sensitivity}
+    \caption{Comparison of spatial and temporal resolution of various neuroimaging techniques. Reprinted from \cite{Strangman2002}, with permission from Elsevier}
+    \label{fig:time_space_resolution}
+\end{figure}
+
+In the neuromonitoring setting, however, both NIRS and DCS suffer from confounding effects of the layers surrounding the brain such as the skull and the scalp. It has been demonstrated that using time-domain techniques for near-infrared spectroscopy improves the measurement's sensitivity to the brain \cite{Selb2005}. In this work we explore how time-domain NIRS can be extended to DCS with the introduction of a novel technique termed \emph{time-domain diffuse correlation spectroscopy} (TD-DCS).
+
+We begin Chapter 1 with a thorough summary of the developments in the field of diffuse optics. We introduce the physical principles of making measurements with near-infrared light as well as the experimental setup and analysis techniques used in the various implementations of this principle. The focus is on developing the concepts leveraged by TD-DCS. In Chapter 2, we outline the construction of the first prototype TD-DCS system and demonstrate proof-of-principle with measurements on artificial phantoms. We also explore the impact of coherence length on the measured DCS correlation function in the time domain. Understanding this is critical for the development of the right model for the TD-DCS correlation function to accurately estimate flow.
+
+\section{Near-Infrared Spectroscopy (NIRS)} \label{sec:NIRS}
+% other links:
+% https://en.wikipedia.org/wiki/Functional_near-infrared_spectroscopy
+% http://www.scholarpedia.org/article/Near_infrared_imaging
+
+To set the ground for understanding the "time-domain" ideas behind time-domain diffuse correlation spectroscopy, we begin with a discussion of a related optical imaging technique known as near-infrared spectroscopy (NIRS). We discuss three of its variations -- continuous-wave, frequency-domain, and time-domain\footnote{In fact, frequency-domain and time-domain NIRS carry the same type of information, so in some literature they are together referred to as "time-resolved spectroscopy" (TRS) \cite{Scholkmann2013}. Other authors reserve the term TRS solely for time-domain NIRS \cite{Wolf2007}.}. As the name implies, the third lays the foundation for the "time-domain" aspects of TD-DCS.  
+
+
+There is a multitude of spectroscopic techniques that rely on the scattering and absorption of light, with experimental work dating as early as the 19\textsuperscript{th} century. Biomedical applications using near-infrared (NIR) light, however, were limited to superficial layers of tissue until 1977, when Frans J{\"o}bsis discovered that it could also be used to probe thicker samples. He used NIRS to measure in vivo brain hemodynamics \cite{Jobsis1977}, thus spurring the recent 40 years of development in this field. (See \cite{Ferrari2012} for a more detailed account on the history of NIRS). In contrast to prior approaches, NIRS measures \emph{diffuse} light that has scattered many times and an individual photon trajectory is a random walk, so in bulk they are estimated by a diffusion equation. Thus, this technique is also often referred to as diffuse optical spectroscopy (DOS). 
+
+The fundamental idea behind NIRS is quite straightforward: we shine light into the tissue, measure it after it passes through, and then use an appropriate model to interpret the difference between the incident and detected light. NIRS is typically divided into three categories based on the type of incident light used and on what is measured by the detector. First, the most simple and inexpensive continuous-wave (CW) systems illuminate the tissue with a \emph{constant-amplitude continuous} light and simply use the light’s attenuation to measure absorption. Next, frequency-domain (FD) systems use \emph{amplitude-modulated continuous} light and measure not only attenuation but also phase shift (delay) to get information about both absorption and scattering properties. Finally, time-domain (TD) systems use extremely short (on the order of a few picoseconds) \emph{pulses} of light and measure the time-of-flight of individual photons to determine not only absorption and scattering but also the pathlength of the photon to provide depth resolution. See \autoref{fig:CW_FD_TD_comparison} for an illustration of these ideas. 
+
+\begin{figure}[tb]
+\centering
+\includegraphics[width=\textwidth]{CW_FD_TD_compare}
+\caption{Comparison of the three variants of NIRS, illustrating the type of light used to probe the tissue. Reprinted from \cite{Scholkmann2013}, with permission from Elsevier}
+\label{fig:CW_FD_TD_comparison}
+\end{figure}
+
+Independent of the type of incident light used, one can also set up various configurations of light sources and detectors to measure optical properties as a function of location. In principle, NIRS or DOS strictly refers to a point-measurement instrument with a single source location and one (or more) detectors. In contrast, diffuse optical imaging (DOI) \cite{Strangman2002}, otherwise referred to as near-infrared imaging (NIRI) or topography, \cite{Scholkmann2013} uses multiple source-detector pairs, or a single one used to measure multiple locations \cite[ch. 9.1.4]{Handbook}, to reconstruct 2D images of the tissue using optical properties as contrast. Finally, diffuse optical tomography (DOT) requires spatially overlapping measurements from multiple sources for 3D reconstructions \cite[ch. 2.4.2]{Madsen2013}. We use the NIRS terminology to distinguish these techniques from diffuse correlation spectroscopy (DCS), described in \autoref{sec:CW-DCS}. 
+
+Additionally, for a given source-detector pair, we can also vary their placement relative to the measured medium. In the transmission (or, transmittance) geometry, the source and detector are placed on opposite surfaces, with the measured medium in the middle (\autoref{fig:transmission}). Since in most biomedical applications the samples such as the human head are too thick or opaque, we cannot measure the light passing through the medium directly. In this case, we take advantage of the fact that tissue is highly scattering and light diffuses laterally. In the reflectance geometry, we place source and detector on the same surface, separated by a few centimeters (\autoref{fig:reflectance}).
+\begin{figure}[tb]
+        \centering
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[height=1.5in]{transmission_infslab}
+        \caption{}
+        \label{fig:transmission}
+    \end{subfigure}~%
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[height=1.5in]{reflection_seminf}
+        \caption{}
+        \label{fig:reflectance}
+    \end{subfigure}  
+    \caption{(a) Transmission geometry through an infinite homogeneous slab of thickness $L$. (b) Reflectance geometry in a semi-infinite homogeneous medium with a source-detector separation $\rho$.}
+    \label{fig:geometry}
+\end{figure}
+
+We limit the discussion here to the basics of NIRS, and the concepts necessary for the development of the theory behind TD-DCS. The focus will be point-measurements, as the image reconstruction algorithms \cite{Oleary1996thesis} are beyond the scope of this work. There are also variations of each of these techniques, such as spatially resolved spectroscopy (SRS) \cite{Wolf2007}, \cite[ch. 2.4.2]{Madsen2013} which uses multiple source-detector separations for a point-measurement to get better estimates, or broadband diffuse optical spectroscopic imaging which uses the entire spectrum of light for measurements \cite[ch. 9]{Handbook}. The details of the many applications of the technique and interpretations of the data are also omitted. Finally, we mention that there exist many other biomedical optical techniques that take advantage the same scattering and absorption phenomena, although for different applications and go by different names such as reflectance spectroscopy \cite[ch. 6]{Handbook} or light scattering spectroscopy \cite[ch. 8]{Handbook}.
+ 
+\subsection{Fundamentals: Light and Physiology} \label{sec:NIRS_fundamentals}
+Before we begin the more detailed discussion of NIRS, we present the fundamental concepts about light that are central to the techniques presented here, as well as some facts about its interaction with tissue. 
+
+\subsubsection{Light, Absorption, and Scattering}
+It is well-known that light is an electromagnetic wave, the simplest of which is a monochromatic plane wave. For simplicity we ignore the spatial extent and polarization, and suffice with a one-dimensional scalar description given by%\footnote{Note the factor of $\frac{1}{2}$ in the second equality, due to the relation $\expval{E(t)} = \frac{1}{2}\Re{\tilde{E}\tilde{E}^*}$}
+\begin{equation} \label{eq:plane_wave_cos}
+\tilde{E}(x,t) = E_0\cos(kx - \omega t + \phi) = \Re{E_0e^{i(kx-\omega t+\phi)}} = \Re{\tilde{E}(x,t)}
+\end{equation}
+The second equality is given by using Euler's formula, where $\Re{\cdot}$ represents the real part. Normally, it is omitted from the notation is always understood to be implicit, so we simply refer to an electromagnetic wave by
+\begin{equation}\label{eq:plane_wave}
+\tilde{E}(x,t) = E_0e^{i(kx-\omega t+\phi)}
+\end{equation}
+
+In general, however, we cannot directly measure the electromagnetic field. Rather, all optical detectors including our eyes can only measure intensity, i.e. the average energy per unit area per unit time, which is related to the electric field by
+\begin{equation} \label{eq:field_intensity}
+I(x) = \frac{\expval{\abs{E(x,t)}^2}}{\eta} 
+= \frac{\expval{\abs{\tilde{E}(x,t)}^2}}{2\eta} 
+= \frac{\expval{\tilde{E}(x,t)\tilde{E}^*(x,t)}}{2\eta} 
+= \frac{E_0^2}{2\eta}
+\end{equation}
+where $\eta = \sqrt{\mu/\epsilon}$ is the impedance (a constant resulting from the electric and magnetic properties of the medium), $E^*$ represents the complex conjugate and $\expval{\cdots}$ represents the time-average i.e.
+\begin{equation}
+\expval{f} = \lim\limits_{T\rightarrow\infty} \frac{1}{T} \int\limits_{-T/2}^{T/2} f(t)~dt
+\end{equation}
+
+
+Electromagnetic radiation, of course, has another well-known interpretation in terms of quantized particles called photons that when analyzed in bulk appear as an electromagnetic wave. So the monochromatic wave above can be interpreted as a stream of photons all of which have the same energy, frequency, momentum, and direction.
+
+%Hecht pg67 Handbook Biomed Optics 6.2.2
+When light impinges onto matter, it will either be absorbed or scattered. If a photon's energy matches the difference in energy levels of an atom, the photon will be absorbed and its energy will be dissipated e.g. as heat. In bulk matter, this phenomenon can be quantified using the Beer-Lambert Law (otherwise called Beer-Lambert-Bouguer Law or simply Beer's Law)
+\begin{equation} \label{eq:beer-lambert}
+I(\lambda) = I_0(\lambda)e^{-\mu_a(\lambda) \rho}
+\end{equation}
+or in its canonical form
+\begin{equation}
+A(\lambda) \equiv -\log\frac{I(\lambda)}{I_0(\lambda)} = \mu_a(\lambda)\rho
+\end{equation}
+where $I_0$ is the intensity of the light from the source, $I$ is the measured light intensity at the detector, $\rho$ is the source-detector separation, and $\mu_a(\lambda)$ is the absorption coefficient, which depends on the properties of the medium. $-\log\frac{I}{I_0}$ is defined as the optical density (OD) or attenuation\footnote{Also note the related quantity transmittance is defined as $T \equiv \frac{I}{I_0}$} (A). The law states that as light passes through the medium over a longer distance, the intensity drops exponentially. In a solution, the absorption coefficient is proportional to the concentrations of \emph{chromophores} (light-absorbing compounds)
+\begin{equation} \label{eq:muA_sum_chromo}
+\mu_a(\lambda) = \sum_i c_i \varepsilon_i(\lambda)
+\end{equation}
+where $c_i$ is the concentration of chromophore $i$ and $\varepsilon_i(\lambda)$ is the proportionality factor called the \emph{extinction coefficient} \cite[ch. 8.2.1]{Handbook}. Thus, the attenuation of a medium is proportional to both the distance the light travels, as well as the chromophore concentration. Note that this relation is wavelength-dependent, since the extinction coefficient varies for different wavelengths. This relation only holds if the medium is non-scattering, the chromophores  are be independent of each other, and the concentration is be homogeneous along the light path. \cite[ch. 2]{Madsen2013}
+% Beer-Lambert 
+%http://chem.libretexts.org/Core/Physical_and_Theoretical_Chemistry/Spectroscopy/Electronic_Spectroscopy/Electronic_Spectroscopy_Basics/The_Beer-Lambert_Law
+%http://www.pci.tu-bs.de/aggericke/PC4/Kap_I/beerslaw.html
+
+
+% Hecht p86-92
+If a photon's energy is not high enough to cause a transition to a higher energy state, the atom's electron cloud is nevertheless driven into oscillation. As an oscillating electric dipole, the atom will immediately re-radiate the photon with the same amount of energy and wavelength, in a random direction. This is known as elastic scattering and will be the primary scattering mechanism at work in our discussion. As scattering depends not only on the individual atoms but also on the structure of the molecule, as well as the spacing and interactions of molecules in the medium, there are multiple models of scattering applicable for different scenarios.  Rayleigh scattering describes independent particles smaller than a wavelength of light arranged randomly in space. Mie scattering deals with particles larger than a wavelength. Inelastic scattering, in contrast, does not preserve the wavelength of the photon. Raman scattering is an example of this phenomenon.
+% Rayleigh, Mie scattering
+%http://hyperphysics.phy-astr.gsu.edu/hbase/atmos/blusky.html#c2
+
+
+\subsubsection{Tissue optical properties}
+% Handbook Bm Optics Ch 5
+Light is absorbed and scattered by matter, and human tissue is no exception. Although we may seem opaque to visible light at first glance, a simple demonstration will indicate otherwise. If one covers a bright flashlight with his hand, the tissue will faintly glow red. As the incident light from the flashlight is white and contains all visible wavelengths, we see that red (and, in fact, infrared) light gets absorbed by tissue the least. We also see that the light exiting the tissue no longer resembles the rays of the incident light as it has also been scattered many times and is considered \emph{diffuse}. 
+
+The primary optical absorbers (chromophores) in tissue include water, lipid, melanin, and hemoglobin. As shown in \autoref{fig:absorption_spectrum}, in biologically relevant conditions the absorption in the near-infrared range  (600-900nm), also called the \emph{optical window}, is lowest, allowing us to use light of these frequencies to investigate biological tissue. The parameter that describes the absorption of a material, as mentioned above, is $\mu_a$, the absorption coefficient. It is defined as the inverse of the average distance a photon travels in the medium before being absorbed (i.e. $\mu_a \equiv \frac{1}{l_a}$ where $l_a$ is the expected path length before encountering an absorber), typically given in units of [cm\textsuperscript{-1}]. 
+\begin{figure}[tb]
+    \centering
+    \includegraphics{chromophore_absorption}
+    \caption{Absorption spectra of biological chromophores. Reprinted from \cite{Scholkmann2013}, with permission from Elsevier}
+    \label{fig:absorption_spectrum}
+\end{figure}
+
+Elastic (Rayleigh and Mie) scattering is the source of the diffusive nature of light in tissue. The primary static scatterers include connective tissue, collagen, skin, as well as cellular organelles. Dynamic scattering is caused primarily by the movement of red blood cells and will be the focus of the discussion in \autoref{sec:Coherent}. It is typically ignored in the context of NIRS. The scattering coefficient $\mu_s$ summarizes the scattering properties of the material, and is defined analogously to $\mu_a$ as the inverse of the average distance a photon travels before being scattered (i.e. $\mu_s \equiv \frac{1}{l_s}$ where $l_s$ is the expected path length before encountering a scatterer), also typically presented in [cm\textsuperscript{-1}]. Scattering, however, is typically not equally likely in all directions, i.e. it is not isotropic. Thus we introduce the anisotropy factor $g \equiv \expval{\cos\theta}$ (ranging from -1 to 1) as the average of the cosine of the scattering angle. $g=0$ corresponds to isotropic (Rayleigh) scattering, $g=1$ to total forward scattering (Mie scattering at large particles), $g=-1$ to total backward scattering. \cite[ch. 5.2]{Handbook}. The reduced scattering coefficient $\mu_s'$ is then defined as $\mu_s' \equiv \mu_s(1-g)$ \cite{Madsen2013}.
+
+\subsubsection{Modeling light transport}
+To fully understand the interaction of light with matter, we would like to create a model of its propagation through the medium. Given measurements of light, inverting the model would then allow us to make inferences about the medium. 
+
+One option is to run a Monte Carlo simulation. Given a three-dimensional model of the medium with known optical properties, we simulate the propagation of individual photons through the medium, using the scattering and absorption properties to probabilistically generate their trajectories, and record those that reach the detector \cite{Boas2002}. It is considered the "gold standard" for modeling, as it is valid for arbitrary three-dimensional configurations of tissue properties and source-detector positioning. The primary limitation of this method, however, is computational. To achieve statistically significant results, we must keep track of the trajectories of several million individual photons and so a single Monte Carlo simulation can take as long as several hours or even days. 
+
+The alternative is to create a mathematical model of the light propagation in tissue. Light transport is described with the radiative transport equation (RTE), otherwise known as the Boltzmann equation, which describes the spatial and temporal distribution of radiance $L(r,t,\hat{s})$ in a volume:
+\begin{multline}\label{eq:RTE}
+\frac{1}{c}\frac{\partial L(r,t,\hat{s})}{\partial t} + \hat{s}\cdot\nabla L(r,t,\hat{s}) + (\mu_a + \mu_s)L(r,t,\hat{s}) \\
+=\mu_s\int_{4\pi}L(r,t,\hat{s})P(\hat{s},\hat{s'})d\Omega + S(r,t,\hat{s})
+\end{multline}
+In the case where $\mu_s >> \mu_a$, i.e. there are many more scattering than absorption events, we can approximate the radiative transport equation with the diffusion equation, describing the steady-state diffusion of the fluence rate $\Phi(r,t)$ through a volume:
+\begin{equation}\label{eq:RTE_diffusion}
+(-\frac{1}{3(\mu_a+\mu_s')}\nabla^2 + \mu_a)\Phi(r,t) = S_0(r,t)
+\end{equation}
+For details and a derivation, see \cite[ch. 3]{Madsen2013}. The diffusion equation can then be solved to get a closed form for $\Phi(r,t)$ for different source types (e.g. CW, FD, TD) and tissue geometries (e.g. infinite, semi-infinite, slab) \cite{Patterson1989, Farrell1992, Fantini1994, Kienle1997}. For example, for a steady-state (i.e. CW) source in a semi-infinite homogeneous medium, with a reflection geometry with source-detector separation $\rho$ (\autoref{fig:reflectance}) we can show that the fluence rate is given by
+\begin{equation} \label{eq:flux_CW}
+\Phi_{CW}(t) = \frac{vS_0}{4\pi D}
+    \left[
+        \frac{ e^{-kr_1} }{ r_1 }
+       -\frac{ e^{-kr_2} }{ r_2 }
+    \right]
+\end{equation}
+where $v$ is the speed of light in the medium, $S$ is the source intensity, and 
+
+\begin{minipage}{0.4\textwidth}
+    \centering
+    \begin{align}
+        &k = \sqrt{3 \mu_a \mu_s'} \\
+        &r_1 = \sqrt{\rho^2+z_0^2} \label{eq:flux_vars_first}\\ 
+        &r_2 = \sqrt{\rho^2+(z_0+2z_b)^2} 
+    \end{align}
+\end{minipage}\hspace*{\fill}%
+\begin{minipage}{0.4\textwidth}
+    \centering
+    \begin{align}
+        &D = \frac{v}{3\mu_s'} \\
+        &z_0 = \frac{1}{\mu_s'}\\
+        &z_b = \frac{2}{3\mu_s'}\frac{1+R_{eff}}{1-R_{eff}} \label{eq:flux_vars_last}
+    \end{align}
+\end{minipage}
+\\
+\\
+\noindent where $R_{eff}$ is the effective reflection coefficient and depends on the relative refractive index. It is approximately equal to 0.493 for a refractive index of $n=1.4$. For a discussion of these parameters, see \cite{Farrell1992} and references therein.
+
+To summarize, the main underlying principle of NIRS is to measure the optical properties of the medium. Then, given models of the underlying physiology and its interaction with light, we can and make estimates about the tissue such as chromophore concentrations. 
+
+\subsection{Continuous Wave (CW-NIRS)} \label{sec:CW-NIRS}
+Continuous-wave infrared spectroscopy is the simplest of the three methods, and also the cheapest to implement due to the relatively basic instrumentation necessary \cite{Scholkmann2013}. While imaging and tomographic arrangements are now in use, along with multiplexing each channel with multiple wavelengths or even broadband (i.e. containing an entire continuous section of the spectrum) light, we describe the most basic implementation of CW-NIRS. 
+
+A single source with two wavelengths (e.g. 690 and 830nm for measuring oxygenated and deoxygenated hemoglobin) of light is used, typically from a pair of lasers or light emitting diodes (LEDs) delivered to the tissue through an optical fiber. Wavelengths are chosen to minimize cross-talk between chromophores as required by the Beer-Lambert Law (\autoref{eq:beer-lambert}). A single detector is used, typically in the form of a photomultiplier tube (PMT), a photodiode, or an avalanche photodiode (APD), and light is collected from the tissue and delivered to the detector through a second optical fiber. We then use the values of the incident and detected intensities for both wavelengths to calculate the concentrations of chromophores of interest -- typically, oxygenated and deoxygenated hemoglobin.
+
+If human tissue did not scatter light, we would be able to then use the Beer-Lambert Law (\autoref{eq:beer-lambert}) to easily calculate $\mu_a$. Measurements of the light intensity for several different wavelengths (one for each chromophore), would allow us to set up a system of equations to solve for the concentration of each chromophore using \autoref{eq:muA_sum_chromo} (extinction coefficients $\varepsilon$ have been tabulated for many compounds over many wavelengths) \cite[ch. 2]{Madsen2013}, \cite[ch. 5]{Handbook}. The reality is, however, that the scattering coefficient $\mu_s$ is several orders of magnitude larger than the absorption coefficient $\mu_a$, violating our earlier stated assumption about the Beer-Lambert law, so the theory needs to be modified accordingly. Delpy et. al. in 1988 proposed the modified Beer-Lambert Law (MBLL) as follows \cite{Delpy1988}:
+\begin{equation} \label{eq:MBLL}
+A \equiv -\log\frac{I}{I_0} = \mu_a\expval{\rho} + G
+\end{equation}
+where $\expval{\rho} = B\rho$ is the mean optical pathlength, and $B$ is called the differential pathlength factor (DPF) that accounts for the increased travel distance of a photon due to scattering. The geometry factor $G$ accounts for losses due to scattering and the measurement geometry. 
+
+The geometry factor $G$ is typically unknown and without it we cannot calculate the absolute concentrations of chromophores, although if we assume it is constant we can measure the change in concentrations by taking a baseline intensity measurement at time $t_1$ and a second one at $t_2$:
+\begin{equation}
+\Delta A = A_{t_2}-A_{t_1}
+\end{equation}
+Substituting \autoref{eq:MBLL}, we get
+\begin{equation}
+\Delta A = -\log\frac{I_{t_2}}{I_{t_1}} = \Delta\mu_aB\rho
+\end{equation}
+where the change in $\mu_a$ is due only to change in chromophore concentrations, as the extinction coefficient $\varepsilon$ is a constant property of the chromophore itself.
+
+While sufficing with measuring the changes in chromophore concentrations removes the need to calculate $G$, the differential path factor $B$ remains a problem. Based on the diffusion approximation, we can show theoretically that, for example, in a semi-infinite homogeneous medium the DPF is given by
+\begin{equation}
+B = \frac{1}{2}\left( \frac{3\mu_s'}{\mu_a} \right)^{\frac{1}{2}}\left[1-\frac{1}{\sqrt{1+\rho\cdot 3\mu_a\mu_s'}}\right]
+\end{equation}
+This equation shows that the DPF depends on both the scattering and absorption coefficients, as well as the source-detector separation. As a result, it depends on wavelength and even varies between age groups \cite{Scholkmann2013}. In practice, however, it is measured empirically and assumed to be constant over time and location. Like the extinction coefficient, this value is typically tabulated and simply included in the calculation as a constant. The tabulated values themselves are measured using time-domain \cite{Chance1988, Delpy1988} or frequency-domain \cite{Franceschini1999} techniques. There are also other methods to estimate the DPF using CW light, by either making measurements using a spectrum of light rather than a set of single frequencies (known as broadband DOS), or making measurements at multiple source-detector separations (known as spatially resolved spectroscopy \cite[ch. 2.4.2]{Madsen2013}). These variations are further described in \cite{Delpy1997}. The primary limitation of CW-NIRS, however, is that the measured drop in intensity can be attributed to either light absorption by the tissue, or light scattering. Generally, it is due to both and we cannot separate the two effects without making an assumption about the measured medium. This issue can be addressed by measuring the change in phase of light in addition to amplitude, using frequency- or time-domain techniques. 
+
+\subsection{Frequency Domain (FD-NIRS)}
+The detailed principles of frequency-domain NIRS are not relevant for developing the theoretical description of TD-DCS, and so the discussion will be very brief, included only for completeness.
+
+In exchange for more complicated instrumentation, FD-NIRS allows us to make exact measurements of the differential pathlength factor (DPF), avoiding the errors inherent in the estimated values used for CW-NIRS. The source intensity is modulated at radio frequency (on the order of 100MHz), such that the modulation period is shorter than the photon time of flight through the tissue. The phase shift, average intensity, and intensity oscillation of the light is measured after passing through the medium. The phase shift is then proportional to the propagation distance, providing us with a direct measurement of the DPF \cite[ch. 2]{Madsen2013}, \cite[ch. 19]{Handbook} \cite{Delpy1997}. Furthermore, given analytical solutions to the light propagating through tissue, \cite{Fantini1994, Fishkin1993}, we can estimate the optical properties of the medium \cite{Franceschini1999}. Due to the intensity modulation inherent in this technique, the light propagation model is referred to in the literature as diffusing photon density waves (DPDW) \cite{Boas1996thesis, Oleary1996thesis, Fishkin1993}.
+
+
+\subsection{Time Domain (TD-NIRS)} \label{sec:TD-NIRS}
+Time-domain near-infrared spectroscopy is a method that is equivalent to FD-NIRS in the information about tissue that it provides, though differing in the measurement principles and instrumentation, and analysis techniques. In theory, the two are related through the Fourier transform. As with CW- and FD-NIRS, there is a multitude of variations that have been implemented, so we will only describe the methodology in general terms. A more detailed review can be found in \cite{Torricelli2014} or \cite[ch. 20]{Handbook}.
+
+In TD-NIRS, instead of using a source light that continuously illuminates the tissue, we use a short laser pulse, typically on the order of 10-100ps or less. As a result of its scattering properties, the photons then diffusely propagate through the tissue, some of them taking direct paths from the source to the detector, others traveling deeper into the tissue. Some never reach the detector due to absorption. As a result, when the pulse exits the tissue, it is delayed, attenuated, and broadened, typically several nanoseconds in temporal "width." The degree to which the pulse is affected by the tissue can then inform us about its optical properties, or the differential path factor discussed in \autoref{sec:CW-NIRS}. 
+
+As suggested by Delpy et. al. \cite{Delpy1988}, the measured intensity profile of the pulse when it is detected is called the temporal point spread function (TPSF), since we are inputting a temporal "point" (i.e. the input laser pulse is modeled as a delta function) and are measuring how it gets spread out as a function of time. In other words, the TPSF can be considered to be the impulse response of the medium\footnote{It is worth noting that the measured TPSF is actually a convolution of the laser pulse with the "true" TPSF and the impulse response function of the detector system, so it may be necessary to remove the effects of the measurement system before analysing the TPSF. In practice, since the pulses are of negligible width compared to the width of the tissue TPSF, this can be ignored \cite[ch. 20.4.1]{Handbook}.}.
+
+One might assume that the photons which arrive at the detector later and therefore a longer pathlength have traveled deeper into the medium; those with a short path remain in the superficial layers. Thus, for a multi-layered medium such as the human head (\autoref{fig:reflectance_head}), if we can measure the changes in intensity of only the late photons by "time-gating" only the ones arriving within a specified period, we can measure the changes in optical properties of the deeper layers, reducing the unwanted contributions of the superficial layers. 
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=0.5\textwidth]{reflectance_head}
+    \caption{Illustration of a typical measurement of the brain using diffuse light. The measured volume is highlighted. Note that it includes layers of tissue that confound the measurement of the brain. Also note that the semi-infinite slab geometry that is typically used to model this setup is only an approximation of the curvature of the head. Reprinted from \cite[ch. 3]{Madsen2013}, with permission of Springer} %© Springer Science+Business Media New York 2013}
+    \label{fig:reflectance_head}
+\end{figure}
+
+One implementation of such a time-gated system was constructed in 2005 by Selb et. al. \cite{Selb2005}: the investigators used a fast electronically shuttered detector to measure the intensity during 500ps temporal gate at seven different time delays. For example, opening the shutter for 500ps with no delay measures the average intensity during the first 500ps of the TPSF. Delaying the shutter by 500ps measures the intensity in the next 500ps time block, and so forth. An analysis using the modified Beer-Lambert law similar to the one described in \autoref{sec:CW-NIRS} can then be used to infer changes in optical properties at varying depths, with early blocks corresponding to shallow layers and late blocks to deeper ones. Furthermore, the resulting measurements can be used to reconstruct the TPSF since we have a sample of the intensity at different points in the TPSF.
+
+The more popular approach to measuring the TPSF is by a technique known as time-correlated single photon counting (TCSPC). In practice, the TPSF cannot be recorded all at once from a single pulse of light. Rather, the medium is illuminated with a train of pulses at a repetition rate on the order of 100MHz. Due to the low average power of the light, at most one photon then reaches the detector for every pulse (rather, this is an assumption made since it's impossible to guarantee due to the probabilistic nature of photon arrivals). In this setup, the only detector that is sensitive enough is either a photomultiplier tube (PMT) or single-photon avalanche photodiode (SPAD). The computer then records the time-of-flight of the photon (i.e. the length of time between the input laser pulse and the arrival of the photon) and records it in a histogram. This histogramming process is repeated until a sufficient number of photons have been accumulated to reconstruct the shape of the TPSF from the histogram. The critical principle here is that there is a greater flux of photons whenever the intensity is higher, so a photon with a time-of-flight that corresponds to the TPSF peak is far more likely to reach the detector than one with a time-of-flight corresponding to the far end of the tail. This concept is illustrated in \autoref{fig:tcspc}. A more in-depth summary of TCSPC systems can be found in \cite{Wahl2014}, and a detailed account of methods and applications in \cite{Becker2005, Becker2014}.
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=0.5\textwidth]{tcspc_concept}
+    \caption{Conceptual illustration of time-correlated single photon counting. Reprinted from \cite{Becker2014} under fair use.}
+    \label{fig:tcspc}
+\end{figure}
+
+The TPSF can be used to determine the absolute tissue optical properties. We first derive the theoretical model of light transport for a pulse of light in terms of the optical properties using the diffusion equation as first suggested by Patterson et. al. in 1989 \cite{Patterson1989}. This gives us a prediction of the light intensity as a function of time, i.e. the TPSF. For example, for a semi-infinite medium and a reflectance geometry with a source-detector separation of $\rho$, the theoretical TPSF is given by \cite{Kienle1997} 
+\begin{equation} \label{eq:TPSF}
+\Phi_{TD}(t) = \frac{vS}{(4\pi D t)^{3/2}} 
+\left[ 
+\exp( -\frac{r_1^2} {4Dt} )
+-\exp( -\frac{r_2^2} {4Dt} ) 
+\right]
+\exp(-v\mu_a t)
+\end{equation}
+where the variables are the same as in \autoref{eq:flux_CW}. This solution is obtained from \autoref{eq:RTE_diffusion} using the appropriate boundary conditions, and an impulse source (in contrast to the steady-state source used to obtain \autoref{eq:flux_CW}). 
+
+Given the measured TPSF, we can use a fitting algorithm that tunes the relevant parameters, $\mu_a$ and $\mu_s'$ until we achieve the optimal agreement between the measurement and the theory. Note that the histogram amplitude depends on the measurement time, so it must be normalized for fitting. Of course, this requires the assumption that the conditions used in the theoretical derivation match the ones used in the measurement. For example, in \autoref{eq:TPSF}, we calculate the TPSF for a reflection geometry with a medium that is assumed to extend infinitely away from the light source as in \autoref{fig:reflectance}. In practice, our measurement setup more closely resembles \autoref{fig:reflectance_head}. This means when performing the measurement the tissue volume must be large enough that the boundary effects of the far edges can be neglected. Clearly, it is also assumed that photon propagation through the medium can be modeled as a diffusion process, that is $\mu_s' >> \mu_a$. 
+
+
+\section{Measurement using coherent light} \label{sec:Coherent}
+Note that for NIRS (\autoref{sec:NIRS}) we only rely on measurements of the average intensity of light, and make no implications about its coherence properties. As such, we use those methods to measure optical\footnotemark properties of the medium such as absorption and scattering. In contrast, in this section we use the coherence of light as a metric for dynamical properties of the medium such as flow and Brownian motion.
+
+\footnotetext{A note on language: it may be tempting to say "static" absorption and scattering properties in contrast with "dynamic" flow properties. In fact, absorption and scattering properties may vary with time (functional NIRS \cite{Boas2014, Scholkmann2014} takes advantage of this), so we refer to them as \emph{optical} properties to differentiate them from \emph{dynamical} (not "dynamic") flow properties}
+
+\subsection{Fundamentals: Coherence and Interference} \label{sec:fundamentals_coherence}
+% https://en.wikipedia.org/wiki/Degree_of_coherence
+% http://people.seas.harvard.edu/~jones/ap216/lectures/ls_3/ls3_u6A/ls3_unit6A.pdf 
+% http://www.colorado.edu/physics/phys4510/phys4510_fa05/Chapter8.pdf
+% Hecht Ch12
+
+As in the previous section, we begin with a brief discussion of the basic concepts which are the workhorse of the spectroscopic techniques discussed in this section.
+
+\subsubsection{Interference}
+% http://www.hep.manchester.ac.uk/u/xiaguo/waveoptics/Section3%20Interference.pdf
+% http://www.loreti.it/chaptersPDF/Ch04_Interference.pdf
+% http://www.sjsu.edu/faculty/beyersdorf/Archive/Phys208F07/ch%201-complex%20representation%20of%20EM%20waves.pdf
+As a thought experiment, consider two monochromatic waves $E_1$ and $E_2$ (\autoref{eq:plane_wave}) of the same wavelength traveling along the same axis and impinging on a screen located at position $x$ where their intensity can be measured (as will be discussed shortly, this is an idealization and truly monochromatic waves cannot exist, but it illustrates the phenomenon of interference which is the central notion behind correlation spectroscopy). By the Principle of Superposition, the electric field at any point in space is simply the sum of electric fields. Thus, at a point on the screen, the electric field is given by
+\begin{equation} \label{eq:interference_field_sum}
+\tilde{E}_S(x,t) = \tilde{E}_1(x,t)+\tilde{E}_2(x,t) = E_{01}e^{i(kx-\omega t+\phi_1)} + E_{02}e^{i(kx-\omega t+\phi_2)} 
+\end{equation}
+What is seen on the screen, however, is the intensity rather than the electric field. Using \autoref{eq:field_intensity}, we can write
+\begin{align}
+I_S  =& \frac{\expval{\tilde{E}_S\tilde{E}_S^*}}{2\eta} \\
+     =& \frac{\expval{\tilde{E}_1\tilde{E}_1^*} 
+         + \expval{\tilde{E}_2\tilde{E}_2^*} 
+         + \expval{\tilde{E}_1\tilde{E}_2^*} 
+         + \expval{\tilde{E}_1^*\tilde{E}_2}}{2\eta} \label{eq:interference} \\
+     =& \frac{E_{01}^2 + E_{02}^2 + 2E_{01}E_{02}\cos(\phi_1-\phi_2)}{2\eta} \\
+     =& I_1 + I_2 + I_{12}
+\end{align}
+where $I_{12}$ is called the interference term. Clearly, it depends on the relative phase of the electric fields. If they are in phase, i.e. $\phi_1-\phi_2=k2\pi$ (for any integer $k$), then the intensity is greater than the sum of the two intensities. If they are 180\textdegree{} out of phase, i.e. $\phi_1-\phi_2=k\pi$ ($k\neq 0$), then the intensity is less than the sum. 
+
+%Assuming stationarity, we can  shift the time origin in \autoref{eq:interference_field_sum} by $\phi_1$ alternatively rewrite \autoref{eq:interference} as
+%\begin{equation}     
+%I_1 + I_2 + \frac{2\Re\expval{\tilde{E}_1(t)\tilde{E}_2^*(t+\tau)} }{2\eta}
+%\end{equation}
+%where $\tau = \phi_2 - \phi_1$ accounts for the phase difference 
+
+\subsubsection{Coherence}
+Temporal self-coherence of light describes its longitudinal phase properties. In broad terms, the coherence time of an electromagnetic wave is the length of time for which its phase remains constant. Monochromatic light, for example has an infinite coherence time. Truly monochromatic light, however cannot exist. \autoref{eq:plane_wave} implies that the electromagnetic field is an ideal harmonic (i.e. single sinusoid) wave and extends infinitely in time and the phase $\phi$ stays the same for all time. Clearly this cannot be true since all waves have a finite temporal extent. 
+
+Light is generated as a result of electrons transitioning between energy states, which are typically on the order of several nanoseconds in duration. An idealized version of the wave packet at a given point in space could be represented by
+\begin{align}\label{eq:wavepacket}
+E_{packet}(t) = 
+\begin{cases}
+E_0\cos(\omega t), & -T \leq t \leq T \\
+0, &\textnormal{otherwise}
+\end{cases}
+\end{align}
+One can then think of a light wave as a succession of such wave packets. The average duration of such a wave packet is the coherence time $\delta t_c$ (a more rigorous definition will be given shortly). In practice, the coherence time is further limited and a wave cannot be described using a single sinusoid even for its finite duration. Fluctuations and collisions among the molecules of the light source cause Doppler shifts and discontinuities in the wave.
+
+Temporal coherence is, of course, not a binary phenomenon. The phase at time $t$ and $t+\tau$ is likely to be highly correlated for small $\tau$ and become less correlated as $\tau$ increases. To quantify this, we use the self-coherence function, given by 
+\begin{equation}\label{eq:deg_coh}
+\tilde{\Gamma}_{11}(\tau) = \expval{\tilde{E}(t+\tau)\tilde{E}^*(t)}
+\end{equation}
+where $\tilde{E}(t)$ is complex, and we omit the explicit dependence on $x$ since the discussion is limited to a single position in space. This is the autocorrelation function of the electric field. This function, however, depends on the amplitude of $\tilde{E}(t)$ so it is useful to consider the normalized form, called the complex degree of temporal coherence:
+\begin{equation}\label{eq:deg_coh_norm}
+\tilde{\gamma}_{11}(\tau) = \frac{\tilde{\Gamma}_{11}(\tau)}{\tilde{\Gamma}_{11}(0)}
+= \frac{\expval{\tilde{E}(t+\tau)\tilde{E}^*(t)}}{\expval{\tilde{E}(t)\tilde{E}^*(t)}}
+\end{equation}
+such that the peak value is $1$. Note that this is a complex quantity, so for example a monochromatic wave has a complex degree of coherence given by  
+\begin{equation}
+{\tilde{\gamma}_{11}} = e^{-i\omega\tau}
+\end{equation}
+The degree of coherence is given by the magnitude of this quantity, so a monochromatic wave has complete coherence, $\abs{\tilde{\gamma}_{11}} = 1$. To summarize:
+
+\begin{align} \label{eq:deg_coh_mag}
+&\abs{\tilde{\gamma}_{11}} = 1, ~\textnormal{coherent limit}\\
+0 < &\abs{\tilde{\gamma}_{11}} < 1, ~\textnormal{partial coherence}\\
+&\abs{\tilde{\gamma}_{11}} = 0, ~\textnormal{incoherent limit}
+\end{align}
+
+For a more detailed introduction to the concept of the degree of coherence, see \cite[ch. 12]{Hecht2002}.
+
+\subsubsection{Fourier transforms}
+Coherence can also be understood in terms of the spectral composition of a light source. The ideal monochromatic wave consists of a single frequency, and thus its spectrum is an infinitely narrow peak at that frequency. 
+
+The frequency spectrum of a wave is related to its temporal profile through the Fourier transform
+\begin{equation} \label{eq:fourier}
+S(\omega) = \int\limits_{-\infty}^{\infty} \tilde{E}(t) e^{i\omega t} dt
+\end{equation}
+and vice versa through the inverse Fourier transform
+\begin{equation} \label{eq:inverse_fourier}
+\tilde{E}(t) = \frac{1}{2\pi}\int\limits_{-\infty}^{\infty} S(\omega) e^{-i\omega t} d\omega
+\end{equation}
+where $S(\omega)$ is the complex amplitude of the light at frequency $\omega$. \autoref{eq:inverse_fourier} can be interpreted to mean that $\tilde{E}(t)$ is simply a weighted summation of sinusoids $e^{-i\omega t}$, weighted by their spectral amplitude $S(\omega)$. Monochromatic light, for instance, contains a single frequency $\omega_0$, so $S(\omega) = E_0\delta(\omega-\omega_0)$ and the integral in \autoref{eq:inverse_fourier} simplifies to \autoref{eq:plane_wave}. To create more complex, waveforms, we must sum up a broader range of frequencies. For instance, the wavepacket given by \autoref{eq:wavepacket} has a spectrum given by $S(\omega)=E_0 T \textnormal{sinc}(T(\omega-\omega_0))$. The coherence time $\Delta t_c$ is therefore defined to be inversely proportional to the width of the spectrum $\Delta \omega=2\pi\Delta\nu$
+\begin{equation}
+\Delta t_c = \frac{1}{\Delta \nu}
+\end{equation}
+We may also choose to refer to the coherence length, which is related to the coherence time by the speed of light
+\begin{equation}
+\Delta l_c = c\Delta t_c
+\end{equation}
+
+White light, such as that from an incandescent bulb, consists of a large range of frequencies, which encompass the entire visible range. The spectrum is very broad, and therefore the coherence time is short. Laser light, in contrast, famous for its high coherence, has a very narrow spectrum and may be referred to as quasimonochromatic. That is, for relatively long intervals the field it produces can be described with a single sinusoid. As such, when we refer to "coherent" light, we typically mean "quasimonochromatic," i.e. having a long coherence time. 
+
+
+
+
+\subsection{Dynamic Light Scattering (DLS)} \label{sec:DLS}
+%http://www.lsinstruments.ch/technology/dynamic_light_scattering_dls/
+%http://www.lsinstruments.ch/technology/dynamic_light_scattering_dls/dynamic_light_scattering_theory/
+To lay the groundwork for a discussion of the "diffuse correlation spectroscopy" portion of TD-DCS, we begin with a description of a more fundamental technique from which DCS is derived. Dynamic light scattering (DLS), also referred to as quasi-elastic light scattering (QELS) or photon correlation spectroscopy (PCS), has a wide range of applications, and there is a large body of theoretical and experimental work devoted to it \cite{Schmitz1990, Pecora1985, BernePecora1976, Brown1993}.  
+
+In its original form, DLS is used to estimate particle sizes in a solution by measuring its diffusivity, or diffusion constant $D$. For example, under some assumptions, we can use the Stokes-Einstein relationship $D = \frac{k_B T}{6\pi\eta R}$ to calculate the particle's radius $R$. Depending on the application, this principle may also be referred to by other names: laser Doppler velocimetry (LDV), electrophoretic light scattering (ELS), Doppler shift spectroscopy (DSS), and others, depending on the exact measurement setup and application \cite[ch. 1.4]{Schmitz1990}. In biomedical applications, it may be referred to as laser speckle contrast imaging (LSCI) and can be used to estimate blood flow \cite[ch. 5]{Madsen2013}. In this section, we discuss only the small portion of the DLS theory and applications that is critical for further discussion of DWS (\autoref{sec:DWS}) and DCS (\autoref{sec:CW-DCS}).
+
+\begin{figure}[tb]
+    \centering
+    \begin{subfigure}[t]{0.5\textwidth}
+        \centering
+        \includegraphics[width=0.9\textwidth]{DLS}
+        \caption{DLS}
+        \label{fig:DLS_setup}
+    \end{subfigure}~%
+    \begin{subfigure}[t]{0.5\textwidth}
+        \centering
+        \includegraphics[width=0.9\textwidth]{DWS}
+        \caption{DWS}
+        \label{fig:DWS_setup}        
+    \end{subfigure}  
+    \caption{(a)~Experiment schematic for DLS, with the detector positioned at angle $\theta$. (b)~Experiment schematic for DWS. Note that the detector can be positioned in either the transmission (1) or reflectance (2) geometry, and there is no longer a well-defined scattering angle since the light is propagating diffusely through the medium,}  
+\end{figure}
+
+The basic experimental setup for DLS is diagrammed in \autoref{fig:DLS_setup}. A coherent light wave impinges on a volume and is scattered in all directions. A detector is placed at angle $\theta$ from the source light path and measures the scattered light. As a result of motion of the particles, the scattered light is Doppler shifted to a different frequency, depending on the direction of the motion of the particle. Since there is now light of various frequencies impinging on te detector, this results in a broadening of the spectrum. By the discussion in the previous section, this corresponds to a decrease in the degree of coherence of the light. \TODO{ASK DAVID: this doesn't match with the interpretation in the next paragraph which says there is only a shift in phase, not frequency... is this why it's called QUASI-elastic light scattering? is there a way to reconcile these interpretations?}
+
+The alternative interpretation of this phenomenon is directly from the intensity autocorrelation function. If the particles were motionless (c.f. static light scattering (SLS) \cite{Malvern2013}), the scattered field from one particle would differ in phase from the fields scattered from the other particles and thus create an interference pattern in the far-field known as a speckle pattern (\autoref{fig:speckle_pattern}). Now, suppose the particles are in motion. If we observe a single point in the pattern, called a speckle, the intensity at that single point would fluctuate as the interference pattern changes over time due to particle motion. If we record the intensity from the speckle as it changes over time, we can try to measure how well correlated the intensity at time $t$ is to the intensity at time $t+\tau$. This is quantified using an autocorrelation function, as discussed in \autoref{sec:fundamentals_coherence}. 
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=0.5\textwidth]{speckle}
+    \caption{A speckle pattern created by coherent light being scattered through a turbid medium.}
+    \label{fig:speckle_pattern}
+\end{figure}
+
+Using the notation most common in the field, $G_1(\tau) = \expval{E(t)E^*(t+\tau)}$ is the unnormalized field autocorrelation function, identical to $\Gamma_{11}(\tau)$ from \autoref{eq:deg_coh}, where $E(t)$ is the complex amplitude (the explicit phasor notation $\tilde{E}(t)$ is omitted). Similarly, 
+\begin{equation} \label{eq:g1_def}
+g_1(\tau) = \frac{G_1(\tau)}{G_1(0)} = \frac{\expval{E(t)E^*(t+\tau)}}{\expval{E(t)E^*(t)}}
+\end{equation}
+is the normalized version. Often, $G_1$ and $g_1$ are instead given as the magnitude of the field autocorrelation, i.e. as the degree of coherence (\autoref{eq:deg_coh_mag}) What is measured by a detector, however, is the intensity, from which we can compute the unnormalized intensity autocorrelation function $G_2(\tau) = \expval{I(t)I(t+\tau)}$. We again can normalize this to avoid having to factor in the average intensity into our calculations, and the normalized intensity autocorrelation function is given by 
+\begin{equation} \label{eq:g2_def}
+g_2(\tau) = \frac{G_2(\tau)}{G_2(0)} = \frac{\expval{I(t)I(t+\tau)}}{\expval{I(t)}^2}
+\end{equation}
+Under certain assumptions \cite[ch. 2.3.3.1]{Brown1993}, the intensity autocorrelation $g_2$ can then be related to the field autocorrelation $g_1$ by what is known as the \emph{Siegert relation}\footnote{This relation was originally obtained in the context of radar signal processing \cite{Siegert1943}}:
+\begin{align}
+                   &G_2(\tau) = G_1(0)^2 + \abs{G_1(\tau)}^2\\
+\textnormal{or~~~} &g_2(\tau) = 1+\abs{g_1(\tau)}^2 \label{eq:siegert_no_beta}
+\end{align}  
+
+According to \autoref{eq:siegert_no_beta}, the maximum value for the normalized intensity autocorrelation is 2, and it decays to 1 with larger lags $\tau$ (note that the range is not from 1 to 0 as one might expect due to the average intensity term $G_1(0)^2$). The above equation, however, is only true for a single point in space. As might be seen from the example speckle pattern in \autoref{fig:speckle_pattern}, the intensity fluctuations at two points far apart on the screen are entirely independent from one another. So, if we average the intensity over the entire screen, the total intensity fluctuation will be almost zero, even though the fluctuation at any single point is strong. On the other hand, two points that are very close to each other might be expected to fluctuate at the same rate. This idea is quantified by the \emph{coherence area} $A_{coh}$, i.e. the area on the screen in which the fluctuations will be the same \cite[ch. 2.3.3]{Pecora1985}. If $A$ is the total detected area, then $N_{coh} = \frac{A}{A_{coh}}$ is the number of coherence areas seen by the detector. So, for a DLS experiment, the maximum value for the normalized intensity autocorrelation is inversely proportional to the number of coherence areas detected. In modern literature, the Siegert relation is usually stated as
+\begin{equation} \label{eq:siegert}
+g_2(\tau) = 1+\beta\abs{g_1(\tau)}^2
+\end{equation}
+where the $\beta$ term ranges from 0 to 1 and corrects for the spatial and temporal coherence of the light in the experimental setup. To maximize $\beta$, we would like to measure from a single coherence area (i.e. one speckle in the speckle pattern).
+
+The simplest way to measure the intensity autocorrelation is by a direct recording of the scattered light, where the output current of the detector is linearly proportional to the intensity of the light impinging on it. The plot of intensity over time can then be used to calculate the intensity autocorrelation according to \autoref{eq:g2_def}. In the case of low light intensity, we can use an alternative method known as photon counting. As the name implies, the detector (either a photomultiplier tube or an avalanche photodiode must be used for sensitivity) outputs a pulse when a single photon is detected. This stream of impulses can then be also directly autocorrelated with \autoref{eq:g2_def}. Importantly, it can be shown from photon counting statistics that the photon correlation is equal to the intensity correlation \cite[ch. 2.3.2.3]{Brown1993}. The origin of the term "photon correlation spectroscopy" is now clear -- we are using the self-correlation of the scattered photon stream to make inferences about the scattering medium.
+
+As a simple example, we present the autocorrelation for a solution of non-interacting colloidal monodisperse spherical particles undergoing Brownian diffusion, as derived in \cite[ch. 16.2.2]{Brown1993} or \cite{Boas1997} (analogous derivations in \cite{BernePecora1976}, \cite{Schmitz1990}). Scattered field is given by the superposition of the scattered fields from each of the $N$ particles with which the light interacted (note we are now describing the field in all three dimensions):
+\begin{equation} \label{eq:scattered_field}
+E_S(t) = \sum_{i=1}^{N} E_0 e^{i\vb{q}\cdot\vb{r_i(t)}}
+\end{equation}
+where $\vb{q}=\vb{k_s}-\vb{k_0}$ is defined as the scattering wavevector. Substituting \autoref{eq:scattered_field} into \autoref{eq:g1_def} and using the assumptions given above about the medium, the normalized field autocorrelation function can be calculated to be 
+\begin{equation} \label{eq:g1_dls}
+g_1(\tau) = e^{-q^2 D_B \tau} = e^{-(2k_0\sin\frac{\theta}{2})^2 D \tau} 
+\end{equation}
+where $q=\abs{\vb{q}}=2k_0\sin\frac{\theta}{2}$ is the magnitude of the scattering wavevector, and $k_0 = \frac{2\pi}{\lambda}$ is the wavenumber of the light in the medium. That is, given a light of a certain wavelength and scattering angle impinging on a medium with a Brownian diffusion coefficient $D_B$, the correlation between the intensity at time $t$ and the intensity at time $t+\tau$ decreases exponentially with increasing $\tau$. The critical assumption in the calculations is that the light is scattered exactly once, which can be satisfied in practice, for example, if the solution is sufficiently dilute. The case of multiple scattering events is discussed in \autoref{sec:DWS}. 
+
+Finally, having a theoretical form for $g_2(\tau)$ using the Siegert relationship, as well as the measured intensity autocorrelation function, we can attempt to estimate the parameters of interest, in this case $D_B$, by fitting the theoretical form of $g_2$ to the measured function. While in theory it is possible to calculate $\beta$ from first principles \cite[ch. 2.3.3.2]{Brown1993}, it is more practical to instead incorporate it into the fitting algorithm as well. We iteratively try to find the optimal value for $\beta$ and $D$ until the optimal goodness-of-fit is reached. See \cite[ch. 4.1,4.4]{Brown1993} for a description of many of the fitting algorithms used in this context. 
+
+\subsection{Diffusing Wave Spectroscopy (DWS)} \label{sec:DWS}
+%http://www.lsinstruments.ch/technology/diffusing_wave_spectroscopy_dws/
+Like DLS, diffusing wave spectroscopy was originally studied in the context of particle motion and sizing but has since been extended to biomedical applications \cite{Ninck2010}. First proposed by Maret and Wolf in 1986 \cite{Maret1986}, diffusing wave spectroscopy (DWS) complements DLS by removing the assumption that light is scattered from the medium exactly once. In contrast, DWS assumes the strong multiple-scattering limit of light and, like NIRS, propagation through tissue can be modeled as a diffusion process. Following the same simple example from the previous section of non-interacting monodisperse spherical diffusing particles, instead of assuming light is scattered once we instead assume that the sample is thick or concentrated enough that the light passing through it has scattered many times. Let's first assume we know the length of the path a photon traveled, $s$. The field autocorrelation function can then be calculated to be
+\begin{equation} \label{eq:g1_pathlength}
+g_1(s, \tau) = e^{-2k_0^2D_B\tau\frac{s}{l^*}}
+\end{equation}
+where $l^* = \frac{1}{\mu_s'}$ is the transport mean free path (i.e. the expected distance a photon travels before begin scattered, corrected for anisotropy, analogous to the definition of $\mu_s$ in \autoref{sec:NIRS_fundamentals}). 
+
+Comparing to \autoref{eq:g1_dls}, observe that the $q^2 = (2k_0\sin\frac{\theta}{2})^2$ term has now been replaced simply by $2k_0^2$. Intuitively, since we no longer have a defined scattering angle, we replace $\sin\frac{\theta}{2}$ with its average value, $\expval{\sin\frac{\theta}{2}} = \frac{1}{2}$. Further observe the additional term $\frac{s}{l^*}$, corresponding to the number of random walk steps the photon took over its path of length $s$. This term implies that every scattering step, on average, causes a decay of $e^{2k_0^2D\tau}$ in the autocorrelation. In other words, in comparison to the single-scattering decay in \autoref{eq:g1_dls}, the multiple scattering light decorrelates by a factor of $\frac{s}{l^*}$ more quickly.  
+
+Without more involved instrumentation (c.f. \cite{Yodh1990}), we cannot measure the pathlength traveled by a photon, so we need to consider all possible pathlengths. The total field autocorrelation function is then a weighted average over all possible pathlengths, given by
+\begin{equation}\label{eq:g1_dws}
+    g_1(\tau) = \int_{0}^{\infty}P(s) g_1(s, \tau) ds
+\end{equation}
+where $P(s)$ is the probability that a photon traveled distance $s$. A rigorous derivation can be found in \cite[ch. 16.2.3.1]{Brown1993} or \cite{Pine1990}.
+
+To calculate the closed-form theoretical autocorrelation function, it remains to determine the pathlength distribution function $P(s)$. In fact, this question has already been addressed in \autoref{sec:TD-NIRS} when discussing the theoretical form of the TPSF. In fact, $P(s)$ is exactly the TPSF of the tissue, normalized such that it is a valid probability distribution, and where the pathlength can be simply related to time-of-flight as $s = t\cdot v$, where $v$ is the speed of light in the medium. Thus $P(s)$ can be modeled using Monte Carlo simulations, or solving the radiative transport equation with the appropriate conditions e.g. \autoref{eq:TPSF}. 
+
+In general, $P(s)$ and therefore $g_1$ will depend on the optical properties of the medium, the physical dimensions of the medium, and the measurement geometry. For example, in the case of a semi-infinite homogeneous diffusing medium in a reflectance geometry, using \autoref{eq:TPSF} to obtain $P(s)$ and \autoref{eq:g1_pathlength} for $g_1(s, \tau)$, $g_1(\tau)$ can be calculated to be
+\begin{equation}
+g_1(\tau) = \frac{ \exp(-\frac{z_0}{l^*} \sqrt{6k_0^2D_B\tau}) }
+                 { 1+ \frac{2}{3} \sqrt{6k_0^2D_B\tau}        }
+\end{equation} 
+where for the purpose of modeling the source of the diffusing light intensity is a distance of $z_0$ inside the boundary of the medium. This approximates placing the light source at the surface and assuming it becomes diffusive after progressing a distance of $z_0$ into the medium. Typically, $z_0 = l^* = \frac{1}{\mu_s'}$. For an in-depth discussion, see \cite[Section 4]{Pine1990} or \cite[ch. 16.2.3.4]{Brown1993}.
+
+It may be preferable to measure $P(s)$ directly. Using the same principles that time-domain NIRS uses to estimate the differential path factor (DPF), we can find $P(s)$ by directly measuring the photon time-of-flight. We can limit our measurements to photons of known pathlength by time-gating techniques (\autoref{sec:TD-NIRS}) and use the pathlength-dependent autocorrelation function $g_1(s,\tau)$ to estimate the dynamical properties. This technique is known as pulsed diffusing-wave spectroscopy \cite{Yodh1990}.  
+
+The experimental setup for DWS is shown in \autoref{fig:DWS_setup}. As with DLS, we collect the light intensity over time from a single speckle, and measure the autocorrelation function. In the DWS case, however, there is no well-defined scattering angle as a result of multiple scattering. This allows us to make the measurements in either the reflectance or transmission geometry. For the analysis, given an appropriate theoretical model for $g_2$ we can find the model parameters which result in the best match with the measured autocorrelation. 
+
+One important consequence of the multiple scattering, is that light loses all of its polarization properties as it scatters through the medium. Assuming the incident light is linearly polarized, the detected light will have equal amplitudes both parallel and perpendicular to the initial polarization direction. As a result, without the use of a polarization analyzer at the detector, the maximum value for $\beta$ is 0.5, rather than 1 as seen before. An analyzer would restore the maximum value of $\beta$ to 1 at the expense of half of the light intensity. See \cite[ch. 16.3.1]{Brown1993} for an in-depth discussion.
+
+Furthermore, due to the multiple scattering, the photon pathlength through the medium is much longer than for a DLS experiment, and therefore it is critical that the coherence length of the laser is longer than the pathlength. Otherwise, the autocorrelation function will decrease as a result of short coherence length rather than from the effects of scattering. This phenomenon is addressed in greater detail in \autoref{sec:theory}.
+
+
+\subsection{Diffuse Correlation Spectroscopy (CW-DCS)} \label{sec:CW-DCS}
+%See David's thesis Section 6.2 for measurement techniques.
+Although this technique is currently referred to in the literature simply as "DCS," when necessary to differentiate it from the time-domain variant that is the focus of this thesis, we refer to it as continuous-wave diffuse correlation spectroscopy (CW-DCS), alluding to the fact that (just like DLS and DWS) it uses a continuous-wave laser source. The primary difference between CW-DCS and DWS is in the theoretical modeling of the autocorrelation. The instrumentation, measurement process, and parameter estimation is largely the same and can be implemented as mentioned in \autoref{sec:DLS} and \autoref{sec:DWS}. The particular experimental setup used in this work is described in \autoref{sec:Chapter2}.
+
+The assumptions made by the DWS theory were too restrictive and in some cases, particularly the backscattering (reflective) geometry, do not fully explain experimental data. Specifically, the theory predics slower decay rate at large delay times than that seen experimentally \cite[ch. 16.2.4]{Brown1993}. In 1992, Ackerson et al.  \cite{Ackerson1992} proposed an alternative formulation suggesting an abstraction where correlation itself is being "transported" through the medium. Mathematically, they propose that the correlation gets transported through the medium in the same way that light does, and suggest a formalism analogous to the radiative transport (RT) equation (\autoref{eq:RTE}) called the correlation transport (CT) equation.
+\begin{multline}\label{eq:CT}
+\frac{1}{c}\frac{\partial G_1(r,\Omega,\tau,t)}{\partial t}\Omega\cdot\nabla G_1(r,\Omega,t,\tau) + \mu_t G_1(r,\Omega,\tau,t) \\
+= \mu_s\int G_1(r,\Omega,\tau,t) g_1^s(\Omega,\Omega',\tau)f(\Omega, \Omega')d\Omega' + S(r,\Omega)
+\end{multline}
+The advantage of this formulation is that not only does it reduce to the single-scattering theory from DLS and the multiple-scattering theory from DWS with the appropriate conditions, but also allows for more general applicability, using the same mathematical tools that are used for analyzing radiative transport \cite{Ackerson1992, Dougherty1994}.
+
+One such mathematical tool, discussed earlier in the context of the RTE, is the diffusion approximation in a highly scattering medium (\autoref{eq:RTE_diffusion}). In 1995, Boas et al. \cite{Boas1995} proposed modeling the correlation transport in turbid media as a correlation diffusion, stating the equation for a homogeneous colloid (as in the example used in the previous sections):
+\begin{equation}\label{eq:CT_diffusion_Brownian}
+(-\frac{1}{3\mu_s'}\nabla^2 + \mu_a + 2\mu_s'k_0^2 \alpha D_B \tau)G_1(r,\tau) = S(r)
+\end{equation}
+Comparing this with the photon diffusion equation (\autoref{eq:RTE_diffusion}), we see that in addition to the photon absorption term $\mu_a$ we have a "correlation absorption" term $2\mu_s'k_0^2 \alpha D_B \tau$ which accounts for the drop in correlation during the "correlation diffusion." See \cite{Boas1997} for a derivation.
+
+Although, as with the photon diffusion equation, solving this for arbitrary configurations is difficult, certain solutions exist. For example, in a homogeneous semi-infinite medium, the unnormalized field autocorrelation function $G_1$ is given by \cite{Durduran2010}
+\begin{equation}\label{eq:g1_DCS_seminf}
+G_1(\tau) = \frac{vS_0}{4\pi D}
+\left[
+    \frac{ e^{-K(\tau)r_1} }{ r_1 }
+    -\frac{ e^{-K(\tau)r_2} }{ r_2 }
+\right]
+\end{equation}
+where the variables are defined as in \autoref{eq:flux_vars_first}--\ref{eq:flux_vars_last}, and 
+\begin{align}
+&K(\tau) = \sqrt{3 \mu_a \mu_s' + \mu_s' k_0^2 6 \alpha D_B \tau}
+\end{align}
+Unsurprisingly, this has a functional form is identical to the steady-state photon flux given by \autoref{eq:flux_CW}, since they are both solutions to their respective diffusion equations. The parameter $\alpha D_B$ is referred to as the blood flow index (BFi) and is a measure of perfusion through the tissue. $D_B$ is, as before, the Brownian diffusion coefficient\footnote{It may seem counterintuitive to use a diffusion model to estimate blood flow, but in practice we see that this model fits the data very well \cite{Durduran2010}.} and $\alpha$ is a fractional term to account for scattering from only the moving particles in the tissue. We can then compute $g_1$ following \autoref{eq:deg_coh} as $g_1(\tau) = \frac{G_1(\tau)}{G_1(0)}$ and $g_2$ using the Siegert relation (\autoref{eq:siegert}).  
+
+The experimental setup is similar to DWS (\autoref{fig:DWS_setup}), although optical fibers typically deliver light from the source to the medium as well as from the medium to the detector. (For an introductory discussion on fiberoptics, see \cite[ch. 5.6]{Hecht2002}). To couple the light from the source to the medium, a multimode fiber is typically used, with core diameters ranging from 50 to 200\textmu m to maximize power transmitted to the medium. Various numerical aperture values can be used. Generally, higher values being easier to couple to the laser, and lower values minimize divergence of the beam at the output therefore decreasing the possibility of contaminating the measurement with reflected light \cite[ch. 6.2]{Boas1996thesis}.
+
+As with DLS, we would like to measure the light from a single speckle, however in the multiple-scattering setting a speckle is typically on the order of 1\textmu m in diameter. It is therefore more practical to use a single-mode fiber which, by propagating a single spatial mode, acts as a spatial filter, resulting in perfect spatial coherence in the cross-section of the fiber \cite{Ricka1993}. In practice, since we're using unpolarized light, there are actually two orthogonal modes corresponding to both polarization directions. Therefore, as discussed in \autoref{sec:DWS}, $\beta$ can be no larger than 0.5. For further discussion on single- and multi-mode fibers in DLS and DWS, see \cite{VanKeuren1993, Ricka1993}.
+
+We conclude this section with a discussion of the limitations of CW-DCS. As evident from \autoref{eq:g1_DCS_seminf}, fitting the autocorrelation function requires prior knowledge of the absorption and scattering coefficients of the tissue. Often, as is done in the CW-NIRS case (\autoref{sec:CW-NIRS}), the optical properties are taken as the average over the probed volume and across subjects. These values can be found in a table such as \cite[ch. 5]{Handbook} or \cite[ch. 1]{Madsen2013}. Due to the high variability between subjects and anatomical locations, this results in a high error in flow estimates \cite{Irwin2011}. Alternatively, the optical properties can be found by performing NIRS and CW-DCS measurements concurrently \cite{Cheung2001}, which requires separate hardware and software and thus more bulky and expensive instrumentation. Finally, similar to CW- and FD-NIRS, the photons travel through layers of tissue that confound the measurement. In our primary application of neuromonitoring, unwanted signal comes from the scalp, skull, and subdural layers \autoref{fig:reflectance_head}. Since we are only interested in cerebral blood flow, this is clearly undesirable. These issues are addressed by a novel technique that combines the time-domain principles of TD-NIRS for estimating optical properties and making time-gated measurements with the CW-DCS methodology of estimating dynamical properties.
+
+
+\subsection{Time-Domain Diffuse Correlation Spectroscopy (TD-DCS)} \label{sec:TD-DCS}
+In 2015 it was proposed \cite{TDDCSpatent}, instead of using continuous-wave light as in CW-DCS, to use laser pulses, analogous to TD-NIRS or pulsed DWS, and simultaneously measure both the TPSF and the autocorrelation. See \autoref{fig:TD-DCS_concept} for an illustration of this idea. The first advantage is clear: using a time-domain measurement, exactly like TD-NIRS, we can measure the TPSF of the tissue and therefore use the photon diffusion theories developed for TD-NIRS to estimate the tissue optical properties directly. Thus, we eliminate a large portion of the error in estimating dynamical properties that is caused by imprecise optical property values \cite{Sutin2016}.
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=0.5\textwidth]{TD_DCS_concept}
+    \caption{Illustration of the main concept behind time-domain diffuse correlation spectroscopy}
+    \label{fig:TD-DCS_concept}
+\end{figure}
+
+Taking advantage of time-correlated single photon counting strategies described in \autoref{sec:TD-NIRS} and \autoref{sec:DLS}, we can furthermore effectively combine the instrumentation necessary for TD-NIRS and CW-DCS. Recall that the TCSPC implementation of TD-NIRS records the time-of-flight (TOF) of each through the tissue, and histograms all of the collected photons based on their TOF to produce the TPSF. Similarly, the photon counting implementation of DLS records the absolute arrival time (i.e. the time from the start of the experiment) for each photon, and using that information computes the measured intensity autocorrelation. Using the terminology of \cite{Becker2014}, for TD-DCS we record \emph{both} the photon time-of-flight (referred to as the \emph{micro} time) and the absolute arrival time (referred to as the \emph{macro} time). Histogramming the time-of-flight allows us to compute the TPSF and estimate optical properties, and the arrival time allows us to compute the autocorrelation and estimate the dynamical properties.
+
+The third major advantage of TD-DCS is gained from time-gating techniques that are in principle the same as those for time-gated TD-NIRS or pulsed DWS, although are implemented in a much more straightforward fashion. Like the other time-domain techniques, TD-DCS allows us to constrain our measurement to a subset of photons with known pathlenghth. It is assumed that photons with a longer pathlength traveled deeper into the medium before reaching the detector, while those with a shorter pathlength took a more direct path from the source to the detector, reaching only superficial layers. (\autoref{fig:TD-DCS_concept}) Effectively, through time-of-flight measurements, we acquire depth resolution (TOF is linearly related to pathlength by the speed of light in the medium). Thus, if we only compute the autocorrelation using photons with time-of-flight less than a certain threshold, we estimate the dynamical properties of the superficial layers, and conversely deeper layers using long TOFs.
+
+There is one aspect, however, in which the time-domain requirements directly conflict with those for DCS. On the one hand, in TD-NIRS, the laser pulses are as short as possible, possibly as low as 3-4 picoseconds wide. As discussed in \autoref{sec:TD-NIRS}, this is to minimize the convolution effect of the source/detector system response with the "true" TPSF of the medium. To resolve the TPSF, the temporal pulse width must be less than the time from the start of the TPSF to the peak. On the other hand, DCS relies on the long temporal coherence length of the laser, and is assumed to be infinite in the theoretical derivations. Even in the ideal case, the temporal coherence of a pulse of light cannot be longer than the width of the pulse itself. In practice, phase artifacts such as "chirp" in the electric field further decrease the coherence length. Intuitively, a pulse cannot be in phase with itself beyond the point where it has decayed, since there is no phase to speak of. The degree of coherence (\autoref{sec:fundamentals_coherence}) has dropped effectively to zero for lags greater than the pulse width. 
+
+Formally, the spectrum (found mathematically by means of the Fourier transform) of a perfectly coherent (i.e. monochromatic/single-frequency/harmonic and therefore extending infinitely in time) wave is a $\delta$-function (i.e. an infinitely narrow impulse). In contrast, a pulse can be thought of as the product of a harmonic wave with a finite-length envelope. In the Fourier domain, this is the convolution of a $\delta$-function with the Fourier transform of the envelope, so the spectrum is broadened and the coherence length, which is inversely proportional to the spectrum width, is shorter (\autoref{sec:fundamentals_coherence}).
+
+Pulses in the range of 100-500ps satisfy both requirements. First, the TPSF width is typically on the order of several nanoseconds so pulses in that range are sufficiently narrow. Furthermore, it was demonstrated according to the theory developed by Bellini et. al. \cite{Bellini1991}, a transform-limited 300ps pulse in a medium with typical biological optical properties, although would suffer a reduction in the signal-to-noise ratio (SNR), would have a long enough coherence length to make a reasonably robust measurement \cite{TDDCSpatent}. The effects of finite temporal coherence are discussed in greater depth in \autoref{sec:theory}.
+
+
+%\end{document}
