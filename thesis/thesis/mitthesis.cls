@@ -1,3 +1,5 @@
+%exerpt from http://web.mit.edu/thesis/tex/ that I can't figure out how to make myself
+
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesClass{mitthesis}[1999/10/20]
 

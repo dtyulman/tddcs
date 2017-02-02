@@ -5,8 +5,7 @@
 \newcommand{\coderepolink}{\mbox{\url{https://github.com/dtyulman/tddcs}}}
 
 %TODO: name, section title in header/footer
-%TODO: two-page setting for margins
-\usepackage[margin=1in, includehead]{geometry} %sets margins
+\usepackage[letterpaper, margin=1in, includehead, headheight=14.5pt]{geometry} %sets margins
 \usepackage{fancyhdr} %nice header/footer
 \fancypagestyle{plain}{
     \fancyhf{} % sets both header and footer to nothing
@@ -36,7 +35,7 @@
 \usepackage{listings} %import code with syntax highlighting
 \usepackage[usenames, dvipsnames]{color}
 \lstdefinestyle{mystyle}{
-    basicstyle=\ttfamily\small,
+    basicstyle=\ttfamily\footnotesize,
     frame=single,
     commentstyle=\color{ForestGreen},    
     keywordstyle=\color{Blue},
@@ -52,12 +51,11 @@
 \lstset{style=mystyle}
 
 \usepackage[backend=biber, 
-            style=nature, 
+            style=ieee, 
             citestyle=numeric, 
             sorting=none]
             {biblatex} %bibliography
 \addbibresource{refs.bib}
-\addbibresource{/Users/danil/Desktop/library.bib}
 
 \usepackage[hidelinks]{hyperref} %automatic references
 \def\chapterautorefname{Chapter}
